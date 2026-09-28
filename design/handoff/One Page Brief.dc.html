@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<script src="./txr-data.js"></script>
+<style>body{margin:0;background:#fff;font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}a{color:#0082FF;text-decoration:none}a:hover{text-decoration:underline}</style>
+</helmet>
+<sc-if value="{{ ready }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ isA }}" hint-placeholder-val="{{ true }}">
+<div data-screen-label="Brief A" style="width:816px;height:1056px;box-sizing:border-box;padding:48px 60px 36px;background:#fff;display:flex;flex-direction:column;font-family:Inter,sans-serif;color:#2D2C2A;overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:14px;border-bottom:1px solid #161514">
+    <img src="assets/upchurch-horizontal.png" alt="Upchurch" style="height:20px;display:block">
+    <div style="display:flex;gap:18px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4845"><span>{{ templateTitle }}</span><span style="color:#161514">Prepared {{ prepared }}</span></div>
+  </div>
+  <div style="padding-top:26px;display:flex;flex-direction:column;gap:6px">
+    <div style="font-family:'Source Serif 4',serif;font-size:42px;font-weight:600;letter-spacing:-.02em;line-height:1.05;color:#000">{{ d.name }}</div>
+    <div style="font-size:12.5px;color:#4A4845">{{ metaLine }}</div>
+  </div>
+  <div style="margin-top:26px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">Why we’re looking</div>
+  <div style="margin-top:10px;display:flex;flex-direction:column">
+    <sc-for list="{{ findings }}" as="f" hint-placeholder-count="3">
+      <div style="display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;padding:11px 0;border-top:1px solid #E2E1DE">
+        <div style="display:flex;flex-direction:column;gap:2px"><div style="font-family:'Source Serif 4',serif;font-size:27px;font-weight:600;color:#004E99;line-height:1.05">{{ f.keyNum }}</div><div style="font-size:9.5px;line-height:1.3;color:#6E6C68">{{ f.keyLabel }}</div></div>
+        <div style="display:flex;flex-direction:column;gap:3px"><div style="font-size:12.5px;font-weight:700;color:#000">{{ f.title }}</div><div style="font-size:12.5px;line-height:1.5;text-wrap:pretty">{{ f.text }}</div><div style="font-size:10px;color:#6E6C68">{{ f.group }} · {{ f.period }}</div></div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:28px">
+    <sc-for list="{{ chartList }}" as="c" hint-placeholder-count="2">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <div style="font-size:11.5px;font-weight:700;color:#000;line-height:1.3;text-wrap:balance">{{ c.title }}</div>
+        <div style="font-size:9.5px;color:#6E6C68;line-height:1.3">{{ c.def }}</div>
+        <div>{{ c.svg }}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 12px">
+          <sc-for list="{{ c.legend }}" as="l"><div style="display:flex;align-items:center;gap:5px;font-size:9px;color:#4A4845"><span style="width:14px;height:0;border-top:{{ l.w }} {{ l.style }} {{ l.color }}"></span>{{ l.label }}</div></sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="margin-top:20px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">{{ profileTitle }}</div>
+  <div style="margin-top:8px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid #E2E1DE;border-bottom:1px solid #E2E1DE">
+    <sc-for list="{{ profile }}" as="p" hint-placeholder-count="5">
+      <div style="padding:10px 12px 10px 0;display:flex;flex-direction:column;gap:2px"><div style="font-size:9.5px;color:#6E6C68;line-height:1.25">{{ p.label }}</div><div style="font-size:16px;font-weight:600;color:#000">{{ p.value }}</div><div style="font-size:9.5px;color:#6E6C68">{{ p.sub }}</div></div>
+    </sc-for>
+  </div>
+  <div style="margin-top:20px;font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">Questions worth exploring</div>
+  <div style="margin-top:8px;display:flex;flex-direction:column;gap:7px">
+    <sc-for list="{{ questions }}" as="q" hint-placeholder-count="3">
+      <div style="display:grid;grid-template-columns:20px minmax(0,1fr);font-family:'Source Serif 4',serif;font-size:14px;line-height:1.4;color:#000"><span style="color:#0082FF;font-weight:600">{{ q.n }}</span><span style="text-wrap:pretty">{{ q.text }}</span></div>
+    </sc-for>
+  </div>
+  <div style="margin-top:auto;padding-top:12px;border-top:1px solid #E2E1DE;display:flex;flex-direction:column;gap:3px;font-size:8.5px;line-height:1.45;color:#6E6C68">
+    <div><span style="font-weight:600;color:#2D2C2A">Sources.</span> {{ sources }}</div>
+    <div><span style="font-weight:600;color:#2D2C2A">Peers.</span> {{ peerDef }}</div>
+    <div><span style="font-weight:600;color:#2D2C2A">Caveats.</span> Per-student figures; district square footage isn’t publicly available. Findings are observations from public data, offered with possible explanations. Based on public data; not a facility condition assessment.</div>
+    <div style="display:flex;justify-content:space-between;color:#9C9A95"><span>Prepared by Upchurch · {{ prepared }} · Illustrative data</span><span>Methodology: upchurch research / methodology</span></div>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{ isB }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Brief B" style="width:816px;height:1056px;box-sizing:border-box;background:#fff;display:flex;flex-direction:column;font-family:Inter,sans-serif;color:#2D2C2A;overflow:hidden">
+  <div style="background:#000;color:#fff;padding:30px 56px 26px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;justify-content:space-between;align-items:center"><img src="assets/upchurch-horizontal.png" alt="Upchurch" style="height:18px;display:block;filter:invert(1)"><div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase">Prepared {{ prepared }}</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8AC3FF">{{ templateTitle }}</div>
+      <div style="font-family:'Source Serif 4',serif;font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1.05">{{ d.name }}</div>
+      <div style="font-size:12.5px;color:#E2E1DE">{{ metaLine }}</div>
+    </div>
+  </div>
+  <div style="padding:24px 56px 30px;display:flex;flex-direction:column;flex:1;min-height:0">
+    <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">Why we’re looking</div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px">
+      <sc-for list="{{ findings }}" as="f" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:6px;border-top:2px solid #000;padding-top:10px">
+          <div style="font-family:'Source Serif 4',serif;font-size:32px;font-weight:600;color:#004E99;line-height:1">{{ f.keyNum }}</div>
+          <div style="font-size:9.5px;color:#6E6C68;line-height:1.3">{{ f.keyLabel }}</div>
+          <div style="font-size:12px;font-weight:700;color:#000;margin-top:4px">{{ f.title }}</div>
+          <div style="font-size:11.5px;line-height:1.5;text-wrap:pretty">{{ f.text }}</div>
+          <div style="font-size:9.5px;color:#6E6C68">{{ f.group }} · {{ f.period }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="margin-top:22px;display:flex;flex-direction:column;gap:6px">
+      <div style="font-size:13px;font-weight:700;color:#000">{{ c1.title }}</div>
+      <div style="font-size:9.5px;color:#6E6C68">{{ c1.def }} · {{ c1.fresh }}</div>
+      <div>{{ c1.svgWide }}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px 14px"><sc-for list="{{ c1.legend }}" as="l"><div style="display:flex;align-items:center;gap:5px;font-size:9px;color:#4A4845"><span style="width:14px;height:0;border-top:{{ l.w }} {{ l.style }} {{ l.color }}"></span>{{ l.label }}</div></sc-for></div>
+    </div>
+    <div style="margin-top:20px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+        <div style="font-size:11.5px;font-weight:700;color:#000;line-height:1.3">{{ c2.title }}</div>
+        <div style="font-size:9.5px;color:#6E6C68">{{ c2.def }}</div>
+        <div>{{ c2.svg }}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 12px"><sc-for list="{{ c2.legend }}" as="l"><div style="display:flex;align-items:center;gap:5px;font-size:9px;color:#4A4845"><span style="width:14px;height:0;border-top:{{ l.w }} {{ l.style }} {{ l.color }}"></span>{{ l.label }}</div></sc-for></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000;padding-bottom:6px">{{ profileTitle }}</div>
+        <sc-for list="{{ profile }}" as="p" hint-placeholder-count="5">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-top:1px solid #E2E1DE"><span style="font-size:10.5px;color:#4A4845">{{ p.label }}</span><span style="font-size:13px;font-weight:600;color:#000;text-align:right">{{ p.value }} <span style="font-size:9.5px;font-weight:400;color:#6E6C68">{{ p.sub }}</span></span></div>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-top:20px;background:#F7F7F6;padding:16px 20px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">Questions worth exploring</div>
+      <sc-for list="{{ questions }}" as="q" hint-placeholder-count="3">
+        <div style="display:grid;grid-template-columns:20px minmax(0,1fr);font-family:'Source Serif 4',serif;font-size:13.5px;line-height:1.4;color:#000"><span style="color:#0082FF;font-weight:600">{{ q.n }}</span><span>{{ q.text }}</span></div>
+      </sc-for>
+    </div>
+    <div style="margin-top:auto;padding-top:12px;display:flex;flex-direction:column;gap:3px;font-size:8.5px;line-height:1.45;color:#6E6C68">
+      <div><span style="font-weight:600;color:#2D2C2A">Sources.</span> {{ sources }}</div>
+      <div><span style="font-weight:600;color:#2D2C2A">Peers.</span> {{ peerDef }}</div>
+      <div>Per-student figures; district square footage isn’t publicly available. Based on public data; not a facility condition assessment. Prepared by Upchurch · {{ prepared }} · Illustrative data.</div>
+    </div>
+  </div>
+</div>
+</sc-if>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:816,&quot;height&quot;:1056},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;A&quot;,&quot;B&quot;],&quot;default&quot;:&quot;A&quot;,&quot;tsType&quot;:&quot;'A'|'B'&quot;},&quot;template&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;pc&quot;,&quot;om&quot;,&quot;cap&quot;,&quot;gen&quot;],&quot;default&quot;:&quot;pc&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;districtId&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;keller&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;prepared&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Sept 2026&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;findings&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object[]&quot;},&quot;questions&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;chartKeys&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;peerOverrides&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;object&quot;}}">
+class Component extends DCLogic {
+  componentDidMount(){ if(!window.TXR){ this._t=setInterval(()=>{ if(window.TXR){ clearInterval(this._t); this.forceUpdate(); } },50); } }
+  componentWillUnmount(){ clearInterval(this._t); }
+  renderVals(){
+    const T=window.TXR; if(!T) return {ready:false};
+    const h=React.createElement;
+    const tpl=this.props.template||'pc', variant=this.props.variant||'A';
+    const d=T.byId[this.props.districtId||'keller']||T.byId.keller;
+    const x=T.derive(d,this.props.peerOverrides||{});
+    const TPL={pc:{t:'Performance Contracting Opportunity Brief',lens:['pc'],charts:['util','yoy'],prof:'op'},om:{t:'Facilities O&M Brief',lens:['om'],charts:['comp','f51'],prof:'op'},cap:{t:'FCA & Bond Planning Brief',lens:['cap'],charts:['debt','bonds'],prof:'cap'},gen:{t:'General District Research Brief',lens:['pc','om','cap'],charts:['util','debt'],prof:'op'}}[tpl];
+    const all=T.cards(x);
+    let def=tpl==='gen'?['pc','om','cap'].map(l=>all.find(c=>c.lens===l)).filter(Boolean):all.filter(c=>TPL.lens.includes(c.lens));
+    const findings=(this.props.findings&&this.props.findings.length?this.props.findings:def).slice(0,3).map(f=>({title:f.title,text:f.text,keyNum:f.keyNum,keyLabel:f.keyLabel,group:f.group,period:f.period}));
+    const qs=(this.props.questions&&this.props.questions.length?this.props.questions:def.map(c=>c.ask)).slice(0,3).map((t,i)=>({n:i+1,text:t}));
+    const keys=(this.props.chartKeys&&this.props.chartKeys.length?this.props.chartKeys:TPL.charts).slice(0,2);
+    const ch=T.charts(x,h,{compact:true,w:360,hgt:210});
+    const wide=T.charts(x,h,{w:760,hgt:210});
+    const pick=k=>ch[k]||ch.util;
+    const c1=Object.assign({},pick(keys[0]),{svgWide:(wide[keys[0]]||wide.util).svg});
+    const c2=pick(keys[1]||keys[0]);
+    const m=x.m;
+    const profile=TPL.prof==='op'||d.charter?[
+      {label:'Plant M&O per student',value:T.$(d.f51PS),sub:'peers '+T.$(m.f51)},
+      {label:'Utilities per student',value:T.$(d.utilPS),sub:'peers '+T.$(m.util)},
+      {label:'Utilities share of plant M&O',value:Math.round(d.utilPS/d.f51PS*100)+'%',sub:'FY2025'},
+      {label:'Campuses per 1,000 students',value:d.cpk.toFixed(2),sub:'peers '+m.cpk.toFixed(2)},
+      {label:'FY2026 utility budget',value:T.pct(d.util26,1),sub:'vs FY2025 actual'}]:[
+      (()=>{ const b=T.bondSummary(d)[2]; return {label:'Bonds passed, last 20 years',value:b.passed+' of '+(b.passed+b.failed),sub:(b.passed+b.failed?b.rate+' · ':'')+(d.lastPassed?'last '+d.lastPassed.label:'none since 1998')}; })(),
+      {label:'Outstanding debt',value:T.$M(d.debt),sub:T.$(d.debt/d.enroll)+'/student'},
+      {label:'Principal retiring by FY2031',value:T.$M(d.retire5),sub:Math.round(d.retire5/d.debt*100)+'% of outstanding'},
+      {label:'I&S tax rate',value:'$'+d.isRate.toFixed(2),sub:'cap $0.50'},
+      {label:'Property value per student',value:'$'+Math.round(d.pvPS/1000)+'K',sub:T.pct(d.pvGrowth5)+' (5 yr)'}];
+    const srcs=[...new Set(keys.map(k=>pick(k).source))].join(' ');
+    return {ready:true,isA:variant==='A',isB:variant==='B',d,templateTitle:TPL.t,prepared:this.props.prepared||'Sept 2026',
+      metaLine:'TEA '+d.teaId+' · '+d.county+' · ESC Region '+d.region+' · '+T.num(d.enroll)+' students ('+T.pct(d.g5,1)+', 5 yr) · '+d.campuses+' campuses ('+d.levels.elementary+' elementary, '+d.levels.middle+' middle, '+d.levels.high+' high)',
+      findings,questions:qs,chartList:[c1,c2],c1,c2,profile,profileTitle:TPL.prof==='op'||d.charter?'Facilities operating profile':'Capital context',
+      sources:srcs+' Enrollment: TEA PEIMS FY2025.',peerDef:m.n+' districts matched on '+T.PEER_CRITERIA.ops.toLowerCase()+(TPL.prof==='cap'?'; capital peers ('+m.nCap+') on '+T.PEER_CRITERIA.cap.toLowerCase():'')+'. Medians, not averages.'};
+  }
+}
+</script>
+</body>
+</html>

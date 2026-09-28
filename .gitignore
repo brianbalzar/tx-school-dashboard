@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+__pycache__/
+.venv/
+*.part
+
+# raw data is large and re-downloadable; processed data is regenerated.
+# Also keeps internal files (TIPS contacts, ESCO workbook) out of the repo.
+data/raw/
+data/processed/
+# plaintext app bundle never leaves your machine
+app/data/bundle.json

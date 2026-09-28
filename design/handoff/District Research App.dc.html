@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<script src="./txr-data.js"></script>
+<style>
+body{margin:0;background:#fff;font-family:Inter,-apple-system,sans-serif;color:#2D2C2A;-webkit-font-smoothing:antialiased}
+a{color:#0082FF;text-decoration:none}a:hover{text-decoration:underline;color:#0068CC}
+button{font-family:inherit}input,select,textarea{font-family:inherit;color:#161514}
+*:focus-visible{outline:2px solid #0082FF;outline-offset:2px}
+@media print{.no-print{display:none!important}}
+</style>
+</helmet>
+
+<sc-if value="{{ locked }}" hint-placeholder-val="{{ false }}">
+<div data-screen-label="Unlock" style="min-height:100vh;background:#F7F7F6;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box">
+  <form onSubmit="{{ onUnlock }}" style="width:100%;max-width:380px;background:#fff;border:1px solid #E2E1DE;border-radius:4px;padding:48px 40px 40px;display:flex;flex-direction:column;gap:24px;box-sizing:border-box">
+    <img src="assets/upchurch-centered.png" alt="Upchurch" style="height:72px;align-self:center">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <label for="teamkey" style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#2D2C2A">Team key</label>
+      <input id="teamkey" type="password" autocomplete="current-password" value="{{ keyInput }}" onChange="{{ onKeyInput }}" style="height:44px;border:1px solid #C9C7C2;border-radius:2px;padding:0 12px;font-size:15px;outline-color:#0082FF">
+      <sc-if value="{{ keyError }}"><div style="font-size:13px;color:#B91D1D">That key didn’t work. Check it and try again.</div></sc-if>
+    </div>
+    <label style="display:flex;align-items:center;gap:10px;font-size:14px;color:#2D2C2A;cursor:pointer"><input type="checkbox" checked="{{ remember }}" onChange="{{ onRemember }}" style="width:16px;height:16px;accent-color:#0082FF">Remember on this device</label>
+    <button type="submit" style="height:46px;background:#0082FF;color:#fff;border:0;border-radius:0;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer" style-hover="background:#0068CC">Unlock</button>
+  </form>
+</div>
+</sc-if>
+
+<sc-if value="{{ unlocked }}" hint-placeholder-val="{{ true }}">
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#fff">
+  <header class="no-print" style="position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid #E2E1DE">
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 24px;padding:0 32px;min-height:60px">
+      <div style="display:flex;align-items:center;gap:14px;flex-shrink:0">
+        <img src="assets/upchurch-horizontal.png" alt="Upchurch" style="height:18px;display:block">
+        <span style="width:1px;height:20px;background:#C9C7C2"></span>
+        <span style="font-size:13px;font-weight:600;color:#000;white-space:nowrap">District Research</span>
+      </div>
+      <nav style="display:flex;gap:22px;height:60px">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="3">
+          <button onClick="{{ n.onClick }}" style="background:none;border:0;border-bottom:2px solid {{ n.line }};padding:0;margin-top:2px;font-size:13.5px;font-weight:{{ n.weight }};color:#000;cursor:pointer;white-space:nowrap">{{ n.label }}</button>
+        </sc-for>
+      </nav>
+      <div style="flex:1"></div>
+      <div style="position:relative;flex:0 1 220px;min-width:150px">
+        <input placeholder="Look up a district" value="{{ lookup }}" onChange="{{ onLookup }}" aria-label="Look up a district" style="width:100%;box-sizing:border-box;height:34px;border:1px solid #C9C7C2;border-radius:2px;padding:0 10px 0 32px;font-size:13px;background:#fff">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6E6C68" stroke-width="2" stroke-linecap="round" style="position:absolute;left:10px;top:10px"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4"></path></svg>
+        <sc-if value="{{ lookupOpen }}">
+          <div style="position:absolute;top:38px;left:0;right:0;background:#fff;border:1px solid #E2E1DE;box-shadow:0 8px 28px rgba(0,0,0,.10);z-index:40;display:flex;flex-direction:column">
+            <sc-for list="{{ lookupResults }}" as="r"><button onClick="{{ r.onClick }}" style="text-align:left;background:#fff;border:0;border-bottom:1px solid #EFEEEC;padding:9px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px" style-hover="background:#F7F7F6"><span style="font-size:13px;font-weight:600;color:#000">{{ r.name }}</span><span style="font-size:11.5px;color:#6E6C68">{{ r.sub }}</span></button></sc-for>
+            <sc-if value="{{ lookupEmpty }}"><div style="padding:10px 12px;font-size:12.5px;color:#6E6C68">No district matches that name.</div></sc-if>
+          </div>
+        </sc-if>
+      </div>
+      <div style="position:relative">
+        <button onClick="{{ toggleSaveMenu }}" title="Research is saved in this browser only" style="display:flex;align-items:center;gap:7px;height:34px;padding:0 10px;background:#fff;border:1px solid #E2E1DE;border-radius:2px;cursor:pointer;font-size:12px;color:#2D2C2A;white-space:nowrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H4zM2 20h20"></path></svg>Saved on this device
+        </button>
+        <sc-if value="{{ saveMenu }}">
+          <div style="position:absolute;right:0;top:40px;width:300px;background:#fff;border:1px solid #E2E1DE;box-shadow:0 8px 28px rgba(0,0,0,.10);z-index:40;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="font-size:12.5px;line-height:1.5;color:#2D2C2A">Pins, dispositions, notes and brief drafts are stored in this browser only. Move or share them with a research file. Shared team notes arrive with company sign-in (v2).</div>
+            <div style="font-size:11.5px;color:#6E6C68">{{ savedAtLabel }}</div>
+            <div style="display:flex;gap:8px">
+              <button onClick="{{ exportResearch }}" style="flex:1;height:34px;background:#000;color:#fff;border:0;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Export file</button>
+              <label style="flex:1;height:34px;border:1px solid #000;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-sizing:border-box">Import file<input type="file" accept="application/json" onChange="{{ importResearch }}" style="display:none"></label>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <button onClick="{{ toggleTray }}" style="display:flex;align-items:center;gap:8px;height:34px;padding:0 12px;background:{{ trayBtnBg }};color:{{ trayBtnFg }};border:1px solid #000;border-radius:0;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">Brief<span style="min-width:18px;height:18px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:#0082FF;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;letter-spacing:0">{{ pinCount }}</span></button>
+    </div>
+    <div style="background:#F7F7F6;border-top:1px solid #EFEEEC;padding:5px 32px;font-size:11.5px;color:#4A4845;display:flex;gap:16px;flex-wrap:wrap"><span><strong style="color:#000;font-weight:600">Illustrative data.</strong> District names other than Keller ISD are fictional; all figures are placeholders for design review.</span><span>Per-student figures; district square footage isn’t publicly available.</span></div>
+  </header>
+
+  <main style="flex:1;padding-right:{{ mainPad }}">
+
+  <sc-if value="{{ isRadar }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Opportunity Radar" style="max-width:1440px;margin:0 auto;padding:32px 32px 64px;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4845">Opportunity Radar</div>
+      <h1 style="margin:0;font-family:'Source Serif 4',serif;font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.15;color:#000;text-wrap:balance">Which districts surface under each business lens, and why.</h1>
+    </div>
+    <div role="tablist" aria-label="Business lens" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));border:1px solid #000">
+      <sc-for list="{{ lenses }}" as="l" hint-placeholder-count="3">
+        <button role="tab" aria-selected="{{ l.active }}" onClick="{{ l.onClick }}" style="text-align:left;padding:14px 18px;background:{{ l.bg }};color:{{ l.fg }};border:0;border-right:1px solid #000;cursor:pointer;display:flex;flex-direction:column;gap:4px">
+          <span style="font-size:14px;font-weight:700">{{ l.label }}</span><span style="font-size:12px;line-height:1.4;opacity:.85">{{ l.desc }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+      <input placeholder="Search districts" value="{{ q }}" onChange="{{ onQ }}" aria-label="Search districts" style="height:36px;width:220px;border:1px solid #C9C7C2;border-radius:2px;padding:0 10px;font-size:13px">
+      <select value="{{ region }}" onChange="{{ onRegion }}" aria-label="ESC region" style="height:36px;border:1px solid #C9C7C2;border-radius:2px;padding:0 8px;font-size:13px;background:#fff">
+        <sc-for list="{{ regionOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+      </select>
+      <select value="{{ band }}" onChange="{{ onBand }}" aria-label="Enrollment band" style="height:36px;border:1px solid #C9C7C2;border-radius:2px;padding:0 8px;font-size:13px;background:#fff">
+        <sc-for list="{{ bandOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+      </select>
+      <select value="{{ locale }}" onChange="{{ onLocale }}" aria-label="Locale" style="height:36px;border:1px solid #C9C7C2;border-radius:2px;padding:0 8px;font-size:13px;background:#fff">
+        <sc-for list="{{ localeOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+      </select>
+      <select value="{{ fy }}" onChange="{{ onFy }}" aria-label="Fiscal year" style="height:36px;border:1px solid #C9C7C2;border-radius:2px;padding:0 8px;font-size:13px;background:#fff">
+        <option value="FY2025">FY2025 actuals</option><option value="FY2024">FY2024 actuals</option><option value="FY2023">FY2023 actuals</option>
+      </select>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;padding:0 6px"><input type="checkbox" checked="{{ charters }}" onChange="{{ onCharters }}" style="accent-color:#0082FF">Include charters</label>
+      <sc-if value="{{ hasFilters }}"><button onClick="{{ clearFilters }}" style="background:none;border:0;font-size:13px;color:#0082FF;cursor:pointer">Clear filters</button></sc-if>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border-top:1px solid #000;border-bottom:1px solid #E2E1DE">
+      <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="4">
+        <div style="padding:16px 20px 16px 0;display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;color:#4A4845">{{ t.label }}</div>
+          <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:28px;font-weight:600;color:#000;letter-spacing:-.01em">{{ t.value }}</span><span style="font-size:13px;color:#4A4845">{{ t.unit }}</span></div>
+          <div style="font-size:12px;color:#4A4845">{{ t.sub }}</div>
+          <span style="align-self:flex-start;font-size:10.5px;font-weight:600;letter-spacing:.04em;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px;border-radius:2px">{{ t.fresh }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:{{ radarCols }};gap:28px;align-items:start">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap">
+          <div style="font-size:14px;color:#2D2C2A"><strong style="color:#000">{{ rowCount }}</strong> {{ rowCountLabel }}</div>
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+            <div role="group" aria-label="Table view" style="display:flex;border:1px solid #000">
+              <sc-for list="{{ tableViewOptions }}" as="o"><button onClick="{{ o.onClick }}" aria-pressed="{{ o.active }}" style="height:28px;padding:0 10px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">{{ o.label }}</button></sc-for>
+            </div>
+            <button onClick="{{ toggleShowAll }}" style="background:none;border:0;padding:0;font-size:13px;color:#0082FF;cursor:pointer">{{ showAllLabel }}</button>
+            <button onClick="{{ toggleMap }}" style="background:none;border:0;padding:0;font-size:13px;color:#0082FF;cursor:pointer">{{ mapToggleLabel }}</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;border-top:1px solid #000">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:{{ tableMin }}">
+            <thead>
+              <tr>
+                <sc-for list="{{ tableHead }}" as="c">
+                  <th scope="col" style="text-align:{{ c.align }};padding:10px 12px 10px 0;border-bottom:1px solid #C9C7C2;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#4A4845;white-space:nowrap;vertical-align:bottom">
+                    <sc-if value="{{ c.sortable }}"><button onClick="{{ c.onSort }}" style="background:none;border:0;padding:0;font:inherit;letter-spacing:inherit;text-transform:inherit;color:{{ c.color }};cursor:pointer">{{ c.label }} {{ c.arrow }}</button></sc-if>
+                    <sc-if value="{{ c.plain }}">{{ c.label }}</sc-if>
+                  </th>
+                </sc-for>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+                <tr tabindex="0" onClick="{{ r.open }}" onKeyDown="{{ r.onKey }}" style="cursor:pointer;border-bottom:1px solid #E2E1DE" style-hover="background:#F7F7F6">
+                  <td style="padding:12px 12px 12px 0;vertical-align:top;min-width:180px"><div style="font-weight:600;color:#000;font-size:13.5px">{{ r.name }}</div><div style="font-size:11.5px;color:#6E6C68;margin-top:2px">{{ r.sub }}</div></td>
+                  <sc-if value="{{ chipTable }}">
+                    <td style="padding:12px 12px 12px 0;vertical-align:top">
+                      <div style="display:flex;flex-wrap:wrap;gap:5px">
+                        <sc-for list="{{ r.chips }}" as="s"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;padding:3px 7px;background:#E5F2FF;color:#003566;border-radius:2px;white-space:nowrap"><span style="width:5px;height:5px;background:#0082FF;display:inline-block"></span>{{ s }}</span></sc-for>
+                        <sc-if value="{{ r.noChips }}"><span style="font-size:11.5px;color:#6E6C68">{{ r.noChipsText }}</span></sc-if>
+                      </div>
+                    </td>
+                  </sc-if>
+                  <sc-if value="{{ matrixTable }}">
+                    <sc-for list="{{ r.cells }}" as="m">
+                      <td style="padding:12px 12px 12px 0;vertical-align:top;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border:1.5px solid {{ m.border }};background:{{ m.fill }};display:inline-block;flex-shrink:0"></span><span style="font-weight:{{ m.weight }};color:{{ m.color }}">{{ m.val }}</span></div></td>
+                    </sc-for>
+                  </sc-if>
+                  <td style="padding:12px 12px 12px 0;vertical-align:top;text-align:right;white-space:nowrap"><div style="font-weight:600;color:#000">{{ r.mag }}</div><div style="font-size:11px;color:#6E6C68">{{ r.magSub }}</div></td>
+                  <td style="padding:12px 12px 12px 0;vertical-align:top;white-space:nowrap"><div style="display:flex;align-items:center;gap:7px"><span style="display:flex;align-items:flex-end;gap:2px;height:12px"><sc-for list="{{ r.bars }}" as="b"><span style="width:4px;height:{{ b.h }};background:{{ b.bg }}"></span></sc-for></span><span>{{ r.evidence }}</span></div></td>
+                  <td style="padding:12px 12px 12px 0;vertical-align:top;font-size:12px;color:#2D2C2A;min-width:130px">{{ r.timing }}</td>
+                  <td style="padding:10px 12px 10px 0;vertical-align:top">{{ r.spark }}</td>
+                  <sc-if value="{{ chipTable }}"><td style="padding:12px 12px 12px 0;vertical-align:top;text-align:right;white-space:nowrap">{{ r.pctile }}</td></sc-if>
+                  <td style="padding:12px 0;vertical-align:top;white-space:nowrap"><div style="display:flex;align-items:center;gap:6px;font-size:12px;color:{{ r.statusColor }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ r.statusIcon }}"></path></svg>{{ r.status }}</div></td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{ noRows }}"><div style="padding:32px 0;font-size:14px;color:#4A4845">No districts match these filters. Try widening the region or enrollment band.</div></sc-if>
+        </div>
+        <div style="font-size:11.5px;color:#6E6C68;line-height:1.5;max-width:90ch">Signals are observations from public data, not conclusions. Rows sort by number of signals, then magnitude; no single score is shown. Peer percentile compares each district’s headline metric with its automatic peer group. <button onClick="{{ goMethod }}" style="background:none;border:0;padding:0;font-size:inherit;color:#0082FF;cursor:pointer">Methodology</button></div>
+      </div>
+
+      <sc-if value="{{ mapOpen }}">
+        <aside style="border:1px solid #E2E1DE;border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:12px;position:sticky;top:110px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:13px;font-weight:700;color:#000">{{ mapTitle }}</div><span style="font-size:10.5px;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px">{{ mapFresh }}</span></div>
+          <div style="font-size:11.5px;color:#6E6C68;line-height:1.4">Schematic ESC regions, arranged roughly by geography. Median across districts in the current filter. Click a region to filter.</div>
+          <div style="display:grid;grid-template-columns:repeat(6,40px);grid-template-rows:repeat(7,40px);gap:3px;align-self:center">
+            <sc-for list="{{ mapTiles }}" as="m" hint-placeholder-count="20">
+              <button onClick="{{ m.onClick }}" title="{{ m.title }}" style="grid-column:{{ m.col }};grid-row:{{ m.row }};background:{{ m.bg }};color:{{ m.fg }};border:{{ m.border }};border-radius:2px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;font-size:10px;line-height:1.1"><span style="font-weight:700;font-size:11px">{{ m.n }}</span><span>{{ m.short }}</span></button>
+            </sc-for>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;height:8px"><span style="flex:1;background:#E5F2FF"></span><span style="flex:1;background:#B8DBFF"></span><span style="flex:1;background:#5CACFF"></span><span style="flex:1;background:#0082FF"></span><span style="flex:1;background:#004E99"></span></div>
+            <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#4A4845"><span>{{ mapLo }}</span><span>{{ mapHi }}</span></div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:10.5px;color:#4A4845"><span style="width:10px;height:10px;background:repeating-linear-gradient(45deg,#fff 0 2px,#E2E1DE 2px 4px);border:1px solid #E2E1DE"></span>No districts in current filter</div>
+          </div>
+        </aside>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isDistrict }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="District Research" style="max-width:1280px;margin:0 auto;padding:24px 32px 72px;display:flex;flex-direction:column;gap:28px">
+    <div style="display:flex;gap:8px;font-size:12.5px;color:#6E6C68"><button onClick="{{ goRadar }}" style="background:none;border:0;padding:0;font-size:inherit;color:#0082FF;cursor:pointer">Opportunity Radar</button><span>/</span><span style="color:#2D2C2A">{{ dd.name }}</span></div>
+    <section style="display:flex;flex-direction:column;gap:20px;border-bottom:1px solid #000;padding-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4845">District research</div>
+          <h1 style="margin:0;font-family:'Source Serif 4',serif;font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1.05;color:#000">{{ dd.name }}</h1>
+          <div style="font-size:14px;color:#2D2C2A">{{ dMeta }}</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onClick="{{ addDistrictToBrief }}" style="height:40px;padding:0 16px;background:#0082FF;color:#fff;border:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer" style-hover="background:#0068CC">Add to brief</button>
+          <button onClick="{{ compareThis }}" style="height:40px;padding:0 16px;background:#fff;color:#000;border:1px solid #000;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Compare</button>
+          <button onClick="{{ exportThis }}" style="height:40px;padding:0 16px;background:#fff;color:#000;border:1px solid #000;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Export</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:18px 24px">
+        <sc-for list="{{ dStats }}" as="s" hint-placeholder-count="7">
+          <div style="display:flex;flex-direction:column;gap:3px;border-left:1px solid #E2E1DE;padding-left:12px"><div style="font-size:11.5px;color:#4A4845">{{ s.label }}</div><div style="font-size:17px;font-weight:600;color:#000">{{ s.value }}</div><div style="font-size:11.5px;color:#6E6C68">{{ s.sub }}</div></div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+        <h2 style="margin:0;font-family:'Source Serif 4',serif;font-size:26px;font-weight:600;color:#000">Opportunity hypotheses</h2>
+        <div style="font-size:12.5px;color:#4A4845;max-width:640px;line-height:1.5">Evidence-backed hypotheses from public data. They cannot diagnose building condition or guarantee savings without district-specific facility and utility data. <button onClick="{{ goMethod }}" style="background:none;border:0;padding:0;font-size:inherit;color:#0082FF;cursor:pointer">Methodology</button></div>
+      </div>
+      <sc-for list="{{ cardGroups }}" as="g" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid #E2E1DE;padding-bottom:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">{{ g.label }}</span><span style="font-size:12px;color:#6E6C68">{{ g.countLabel }}</span></div>
+          <sc-if value="{{ g.empty }}"><div style="font-size:13px;color:#4A4845;padding:4px 0 8px">{{ g.emptyText }}</div></sc-if>
+
+          <sc-if value="{{ cardsA }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:16px">
+            <sc-for list="{{ g.cards }}" as="c">
+              <article style="border:1px solid #E2E1DE;border-radius:4px;background:#fff;display:flex;flex-direction:column" style-hover="box-shadow:0 4px 16px rgba(0,0,0,.06)">
+                <div style="padding:20px 22px 16px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                    <h3 style="margin:0;font-size:17px;font-weight:700;color:#000;line-height:1.3">{{ c.title }}</h3>
+                    <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#000;white-space:nowrap"><span style="display:flex;align-items:flex-end;gap:2px;height:12px"><sc-for list="{{ c.bars }}" as="b"><span style="width:4px;height:{{ b.h }};background:{{ b.bg }}"></span></sc-for></span>{{ c.strength }}</div>
+                  </div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#4A4845">
+                    <span style="font-weight:600;color:#000">{{ c.dollarsLabel }}</span><span>{{ c.period }}</span>
+                    <button onClick="{{ c.onPeers }}" style="background:none;border:0;padding:0;font-size:12px;color:#0082FF;cursor:pointer">{{ c.group }} ▾</button>
+                  </div>
+                  <p style="margin:0;font-size:15px;line-height:1.55;color:#161514;text-wrap:pretty">{{ c.text }}</p>
+                  <sc-if value="{{ c.hasCaveat }}"><div style="background:#F7F7F6;padding:9px 12px;font-size:12.5px;line-height:1.5;color:#4A4845;font-style:italic">{{ c.caveat }}</div></sc-if>
+                  <sc-if value="{{ c.hasAsk }}"><div style="display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;font-size:13.5px;line-height:1.5"><span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#0082FF;padding-top:2px">ASK</span><span style="font-family:'Source Serif 4',serif;font-size:15px;color:#000">“{{ c.ask }}”</span></div></sc-if>
+                  <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-size:10.5px;font-weight:600;letter-spacing:.04em;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px;border-radius:2px">{{ c.fresh }}</span><span style="font-size:11px;color:#6E6C68">{{ c.source }}</span></div>
+                </div>
+                <div style="margin-top:auto;border-top:1px solid #E2E1DE;padding:12px 22px;display:flex;flex-direction:column;gap:10px;background:#FCFCFB">
+                  <div role="radiogroup" aria-label="Disposition" style="display:flex;flex-wrap:wrap;gap:4px">
+                    <sc-for list="{{ c.disp }}" as="o">
+                      <button role="radio" aria-checked="{{ o.active }}" onClick="{{ o.onClick }}" style="display:flex;align-items:center;gap:5px;height:28px;padding:0 9px;background:{{ o.bg }};color:{{ o.fg }};border:1px solid {{ o.border }};border-radius:2px;font-size:11.5px;cursor:pointer;white-space:nowrap"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ o.icon }}"></path></svg>{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:16px;flex-wrap:wrap">
+                    <button onClick="{{ c.onPin }}" style="display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;font-size:12.5px;font-weight:600;color:{{ c.pinColor }};cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg>{{ c.pinLabel }}</button>
+                    <sc-if value="{{ c.hasChart }}"><button onClick="{{ c.onEvidence }}" style="display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;font-size:12.5px;color:#0082FF;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 15l4-4 3 3 6-7"></path></svg>Evidence chart</button></sc-if>
+                    <button onClick="{{ c.onNote }}" style="display:flex;align-items:center;gap:6px;background:none;border:0;padding:0;font-size:12.5px;color:#0082FF;cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>Add note</button>
+                  </div>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ cardsB }}">
+          <div style="display:flex;flex-direction:column;border-top:1px solid #E2E1DE">
+            <sc-for list="{{ g.cards }}" as="c">
+              <article style="border-bottom:1px solid #E2E1DE">
+                <div style="display:grid;grid-template-columns:118px minmax(0,1fr) 190px 170px 28px;gap:16px;align-items:start;padding:14px 0">
+                  <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#000;padding-top:2px"><span style="display:flex;align-items:flex-end;gap:2px;height:12px"><sc-for list="{{ c.bars }}" as="b"><span style="width:4px;height:{{ b.h }};background:{{ b.bg }}"></span></sc-for></span>{{ c.strength }}</div>
+                  <div style="display:flex;flex-direction:column;gap:3px;min-width:0"><div style="font-size:14px;font-weight:700;color:#000">{{ c.title }}</div><div style="font-size:13.5px;line-height:1.5;color:#2D2C2A;text-wrap:pretty">{{ c.text }}</div></div>
+                  <div style="display:flex;flex-direction:column;gap:2px;font-size:12px"><span style="font-weight:600;color:#000">{{ c.dollarsLabel }}</span><span style="color:#6E6C68">{{ c.period }}</span></div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <select value="{{ c.dispKey }}" onChange="{{ c.onDispChange }}" aria-label="Disposition" style="height:30px;border:1px solid #C9C7C2;border-radius:2px;font-size:12px;padding:0 6px;background:#fff">
+                      <option value="">Set disposition</option>
+                      <sc-for list="{{ c.disp }}" as="o"><option value="{{ o.k }}">{{ o.label }}</option></sc-for>
+                    </select>
+                    <button onClick="{{ c.onPin }}" style="text-align:left;background:none;border:0;padding:0;font-size:12px;font-weight:600;color:{{ c.pinColor }};cursor:pointer">{{ c.pinLabel }}</button>
+                  </div>
+                  <button onClick="{{ c.onToggle }}" aria-label="Show details" aria-expanded="{{ c.expanded }}" style="width:28px;height:28px;background:none;border:1px solid #E2E1DE;border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate({{ c.chevRot }})"><path d="m6 9 6 6 6-6"></path></svg></button>
+                </div>
+                <sc-if value="{{ c.expanded }}">
+                  <div style="margin-left:134px;margin-right:44px;padding:0 0 16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 24px">
+                    <sc-if value="{{ c.hasCaveat }}"><div style="font-size:12.5px;line-height:1.5;color:#4A4845;font-style:italic;background:#F7F7F6;padding:9px 12px">{{ c.caveat }}</div></sc-if>
+                    <sc-if value="{{ c.hasAsk }}"><div style="font-size:13.5px;line-height:1.5;font-family:'Source Serif 4',serif;color:#000"><span style="font-family:Inter,sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;color:#0082FF;margin-right:8px">ASK</span>“{{ c.ask }}”</div></sc-if>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#4A4845;align-items:center;grid-column:1/-1">
+                      <span style="font-size:10.5px;font-weight:600;border:1px solid #E2E1DE;padding:2px 6px">{{ c.fresh }}</span>
+                      <button onClick="{{ c.onPeers }}" style="background:none;border:0;padding:0;font-size:12px;color:#0082FF;cursor:pointer">{{ c.group }} ▾</button>
+                      <sc-if value="{{ c.hasChart }}"><button onClick="{{ c.onEvidence }}" style="background:none;border:0;padding:0;font-size:12px;color:#0082FF;cursor:pointer">Evidence chart</button></sc-if>
+                      <button onClick="{{ c.onNote }}" style="background:none;border:0;padding:0;font-size:12px;color:#0082FF;cursor:pointer">Add note</button>
+                    </div>
+                  </div>
+                </sc-if>
+              </article>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </section>
+
+    <section style="display:flex;flex-direction:column;gap:22px">
+      <div role="tablist" style="display:flex;flex-wrap:wrap;column-gap:22px;border-bottom:1px solid #C9C7C2">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+          <button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.onClick }}" style="background:none;border:0;border-bottom:2px solid {{ t.line }};margin-bottom:-1px;padding:10px 0;font-size:14px;font-weight:{{ t.weight }};color:#000;cursor:pointer;white-space:nowrap">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ tabTiles.length }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+          <sc-for list="{{ tabTiles }}" as="t">
+            <div style="border:1px solid #E2E1DE;border-radius:4px;padding:14px 16px;display:flex;flex-direction:column;gap:5px">
+              <div style="font-size:12px;color:#4A4845;line-height:1.35">{{ t.label }}</div>
+              <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap"><span style="font-size:22px;font-weight:600;color:#000">{{ t.value }}</span><span style="font-size:12px;color:{{ t.deltaColor }};font-weight:600">{{ t.delta }}</span></div>
+              <div style="font-size:11.5px;color:#6E6C68;line-height:1.4">{{ t.sub }}</div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:6px;margin-top:2px"><span style="font-size:10.5px;font-weight:600;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px">{{ t.fresh }}</span>{{ t.spark }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabDims.length }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));border-top:1px solid #000">
+          <sc-for list="{{ tabDims }}" as="dm">
+            <div style="padding:14px 18px 14px 0;display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">{{ dm.label }}</div>
+              <sc-for list="{{ dm.items }}" as="it"><div style="display:flex;justify-content:space-between;gap:10px;font-size:12.5px;border-bottom:1px solid #EFEEEC;padding-bottom:5px"><span style="color:#4A4845">{{ it.k }}</span><span style="font-weight:600;color:#000;text-align:right">{{ it.v }}</span></div></sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.capSummary }}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap"><div style="font-size:15px;font-weight:700;color:#000">Bond record by period</div><span style="font-size:10.5px;font-weight:600;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px">Bond elections through May 2026</span></div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:560px">
+              <thead><tr><sc-for list="{{ bondSumHead }}" as="hd"><th style="text-align:{{ hd.align }};padding:8px 14px 8px 0;border-bottom:1px solid #000;font-weight:600;white-space:nowrap">{{ hd.label }}</th></sc-for></tr></thead>
+              <tbody><sc-for list="{{ bondSumRows }}" as="r"><tr><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE;font-weight:600;color:#000">{{ r.window }}</td><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE;text-align:right">{{ r.passed }}</td><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE;text-align:right">{{ r.failed }}</td><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE;text-align:right">{{ r.rate }}</td><td style="padding:9px 0;border-bottom:1px solid #E2E1DE;text-align:right;font-weight:600;color:#000">{{ r.amountLabel }}</td></tr></sc-for></tbody>
+            </table>
+          </div>
+          <div style="font-size:11.5px;color:#6E6C68">{{ lastElectionLine }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.budget }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px">
+          <div style="border:1px solid #E2E1DE;border-radius:4px;padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div style="font-size:15px;font-weight:700;color:#000">Campus portfolio</div><span style="font-size:10.5px;font-weight:600;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px">TEA campuses 2024-25</span></div>
+            <div style="display:flex;flex-direction:column">
+              <sc-for list="{{ levelRows }}" as="lv"><div style="display:grid;grid-template-columns:110px minmax(0,1fr) 40px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid #EFEEEC;font-size:13px"><span style="color:#2D2C2A">{{ lv.label }}</span><span style="height:10px;background:#EFEEEC;display:block"><span style="display:block;height:10px;width:{{ lv.w }};background:#0082FF"></span></span><span style="text-align:right;font-weight:600;color:#000">{{ lv.n }}</span></div></sc-for>
+            </div>
+            <div style="font-size:11.5px;color:#6E6C68;line-height:1.45">{{ levelNote }}</div>
+          </div>
+          <div style="border:1px solid #E2E1DE;border-radius:4px;padding:16px 20px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><div style="font-size:15px;font-weight:700;color:#000">Accountability ratings (A–F)</div><span style="font-size:10.5px;font-weight:600;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px">TEA TAPR</span></div>
+            <div style="border:1px dashed #C9C7C2;padding:14px;font-size:13px;line-height:1.5;color:#2D2C2A">Ratings not yet loaded. TEA accountability ratings are a manual download and will show district and campus ratings by level once added.</div>
+            <div style="font-size:11.5px;color:#6E6C68;line-height:1.45">Context for the conversation only; ratings are not a facilities signal.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabCharts.length }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(480px,1fr));gap:18px">
+          <sc-for list="{{ tabCharts }}" as="c">
+            <figure style="margin:0;grid-column:{{ c.span }};border:1px solid #E2E1DE;border-radius:4px;padding:18px 22px;display:flex;flex-direction:column;gap:10px;min-width:0;position:relative">
+              <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start">
+                <div style="display:flex;flex-direction:column;gap:4px;min-width:0"><div style="font-size:15px;font-weight:700;color:#000;line-height:1.35;text-wrap:balance">{{ c.title }}</div><div style="font-size:12px;color:#4A4845;line-height:1.4">{{ c.def }}</div></div>
+                <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+                  <span style="font-size:10.5px;font-weight:600;color:#4A4845;border:1px solid #E2E1DE;padding:2px 6px;white-space:nowrap">{{ c.fresh }}</span>
+                  <button onClick="{{ c.toggleTable }}" aria-pressed="{{ c.showTable }}" style="height:26px;padding:0 8px;background:#fff;border:1px solid #C9C7C2;border-radius:2px;font-size:11.5px;cursor:pointer">{{ c.tableLabel }}</button>
+                  <button onClick="{{ c.toggleExport }}" aria-expanded="{{ c.exportOpen }}" style="height:26px;padding:0 8px;background:#fff;border:1px solid #C9C7C2;border-radius:2px;font-size:11.5px;cursor:pointer;display:flex;align-items:center;gap:5px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path></svg>Export</button>
+                </div>
+              </div>
+              <sc-if value="{{ c.exportOpen }}">
+                <div style="position:absolute;right:22px;top:52px;width:250px;background:#fff;border:1px solid #E2E1DE;box-shadow:0 8px 28px rgba(0,0,0,.10);z-index:10;padding:12px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ c.exportActions }}" as="a"><button onClick="{{ a.onClick }}" style="text-align:left;background:#fff;border:0;padding:7px 4px;font-size:12.5px;color:#000;cursor:pointer;border-bottom:1px solid #EFEEEC" style-hover="background:#F7F7F6">{{ a.label }}</button></sc-for>
+                  </div>
+                  <div style="display:flex;border:1px solid #C9C7C2">
+                    <sc-for list="{{ aspectOptions }}" as="o"><button onClick="{{ o.onClick }}" style="flex:1;height:28px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-size:11.5px;cursor:pointer">{{ o.label }}</button></sc-for>
+                  </div>
+                  <label style="display:flex;align-items:center;gap:8px;font-size:12px;cursor:pointer"><input type="checkbox" checked="{{ exportTransparent }}" onChange="{{ toggleTransparent }}" style="accent-color:#0082FF">Transparent background</label>
+                  <div style="font-size:11px;color:#6E6C68;line-height:1.4">Exports include district, title, definition, period, peers, source, caveat and Upchurch attribution.</div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ c.showChart }}"><div style="min-width:0">{{ c.svg }}</div></sc-if>
+              <sc-if value="{{ c.showTable }}">
+                <div style="overflow-x:auto;max-height:280px;overflow-y:auto">
+                  <table style="width:100%;border-collapse:collapse;font-size:12px">
+                    <thead><tr><sc-for list="{{ c.head }}" as="hd"><th style="text-align:left;padding:6px 10px 6px 0;border-bottom:1px solid #C9C7C2;font-weight:600;color:#4A4845;white-space:nowrap;position:sticky;top:0;background:#fff">{{ hd }}</th></sc-for></tr></thead>
+                    <tbody><sc-for list="{{ c.rows }}" as="row"><tr><sc-for list="{{ row }}" as="cell"><td style="padding:5px 10px 5px 0;border-bottom:1px solid #EFEEEC;white-space:nowrap">{{ cell }}</td></sc-for></tr></sc-for></tbody>
+                  </table>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-wrap:wrap;gap:6px 16px">
+                <sc-for list="{{ c.legend }}" as="l"><div style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:#2D2C2A"><span style="width:18px;height:0;border-top:{{ l.w }} {{ l.style }} {{ l.color }}"></span>{{ l.label }}</div></sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:3px;font-size:11px;color:#6E6C68;line-height:1.45;border-top:1px solid #EFEEEC;padding-top:8px">
+                <sc-if value="{{ c.caveat }}"><div style="font-style:italic;color:#4A4845">{{ c.caveat }}</div></sc-if>
+                <div>{{ c.peerDef }} {{ c.source }}</div>
+              </div>
+            </figure>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.capMissing }}">
+        <div style="border:1px dashed #C9C7C2;padding:28px;font-size:14px;color:#2D2C2A;line-height:1.5">Debt and bond data are not available for charter schools. Charters don’t levy I&amp;S taxes or hold bond elections, so capital-planning signals don’t apply.</div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.peers }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:32px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;border:1px solid #000;align-self:flex-start">
+              <sc-for list="{{ peerSets }}" as="o"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 14px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-size:12.5px;font-weight:600;cursor:pointer">{{ o.label }}</button></sc-for>
+            </div>
+            <div style="font-size:13px;line-height:1.5;color:#2D2C2A"><strong style="color:#000">{{ peerCount }} similar districts</strong>, matched on {{ peerCriteria }}. Remove poor matches or add known comparables. Charts and exports state this definition.</div>
+            <div style="display:flex;flex-direction:column;border-top:1px solid #E2E1DE">
+              <sc-for list="{{ peerMembers }}" as="p">
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E2E1DE">
+                  <button onClick="{{ p.onOpen }}" style="text-align:left;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;gap:2px"><span style="font-size:13.5px;font-weight:600;color:#000">{{ p.name }}</span><span style="font-size:11.5px;color:#6E6C68">{{ p.sub }}</span></button>
+                  <div style="display:flex;align-items:center;gap:8px"><sc-if value="{{ p.added }}"><span style="font-size:10.5px;color:#004E99;border:1px solid #B8DBFF;padding:1px 5px">Added</span></sc-if><button onClick="{{ p.onRemove }}" aria-label="Remove from peers" style="width:26px;height:26px;border:1px solid #E2E1DE;background:#fff;border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select value="" onChange="{{ onPeerAdd }}" aria-label="Add a comparable district" style="height:34px;border:1px solid #C9C7C2;border-radius:2px;font-size:12.5px;padding:0 8px;background:#fff;flex:1;min-width:180px">
+                <option value="">Add a comparable district…</option>
+                <sc-for list="{{ peerAddOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+              </select>
+              <sc-if value="{{ peerEdited }}"><button onClick="{{ resetPeers }}" style="background:none;border:0;font-size:12.5px;color:#0082FF;cursor:pointer">Reset to automatic</button></sc-if>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:15px;font-weight:700;color:#000">{{ dd.name }} versus comparison medians</div>
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+                <thead><tr><th style="text-align:left;padding:8px 10px 8px 0;border-bottom:1px solid #000;font-weight:600">Metric</th><th style="text-align:right;padding:8px 10px;border-bottom:1px solid #000;font-weight:600;color:#004E99">District</th><th style="text-align:right;padding:8px 10px;border-bottom:1px solid #000;font-weight:600">Peer median</th><th style="text-align:right;padding:8px 10px;border-bottom:1px solid #000;font-weight:600">ESC region</th><th style="text-align:right;padding:8px 0 8px 10px;border-bottom:1px solid #000;font-weight:600">Statewide</th></tr></thead>
+                <tbody><sc-for list="{{ peerTable }}" as="r"><tr><td style="padding:8px 10px 8px 0;border-bottom:1px solid #E2E1DE">{{ r.k }}</td><td style="text-align:right;padding:8px 10px;border-bottom:1px solid #E2E1DE;font-weight:600;color:#004E99">{{ r.d }}</td><td style="text-align:right;padding:8px 10px;border-bottom:1px solid #E2E1DE">{{ r.p }}</td><td style="text-align:right;padding:8px 10px;border-bottom:1px solid #E2E1DE">{{ r.r }}</td><td style="text-align:right;padding:8px 0 8px 10px;border-bottom:1px solid #E2E1DE">{{ r.s }}</td></tr></sc-for></tbody>
+              </table>
+            </div>
+            <div style="font-size:11px;color:#6E6C68">Medians, never averages. Region and state medians use automatic membership.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.research }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:32px;align-items:start">
+          <div style="display:flex;flex-direction:column;border-top:1px solid #000">
+            <sc-for list="{{ researchItems }}" as="it">
+              <div style="display:grid;grid-template-columns:180px auto minmax(0,1fr);gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #E2E1DE">
+                <div style="font-size:13px;font-weight:600;color:#000">{{ it.label }}</div>
+                <div style="display:flex;border:1px solid #C9C7C2">
+                  <sc-for list="{{ it.statuses }}" as="s"><button onClick="{{ s.onClick }}" style="height:26px;padding:0 8px;border:0;background:{{ s.bg }};color:{{ s.fg }};font-size:11px;cursor:pointer;white-space:nowrap">{{ s.label }}</button></sc-for>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                  <input placeholder="URL" value="{{ it.url }}" onChange="{{ it.onUrl }}" style="height:28px;border:1px solid #E2E1DE;border-radius:2px;padding:0 8px;font-size:12px;min-width:0">
+                  <input placeholder="Note" value="{{ it.note }}" onChange="{{ it.onNote }}" style="height:28px;border:1px solid #E2E1DE;border-radius:2px;padding:0 8px;font-size:12px;min-width:0">
+                </div>
+              </div>
+            </sc-for>
+            <div style="font-size:11.5px;color:#6E6C68;padding-top:8px">{{ researchProgress }}</div>
+          </div>
+          <div style="border:1px solid #E2E1DE;border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:10px;background:#F7F7F6">
+            <div style="font-size:14px;font-weight:700;color:#000">Add a document-sourced finding</div>
+            <div style="font-size:12.5px;color:#4A4845;line-height:1.5">It becomes a finding card you can mark and pin like any other.</div>
+            <textarea placeholder="FY2026 budget names HVAC replacement and controls standardization as priorities." value="{{ docText }}" onChange="{{ onDocText }}" rows="4" style="border:1px solid #C9C7C2;border-radius:2px;padding:8px;font-size:13px;resize:vertical;background:#fff"></textarea>
+            <input placeholder="Source, e.g. Adopted Budget p. 42" value="{{ docSrc }}" onChange="{{ onDocSrc }}" style="height:34px;border:1px solid #C9C7C2;border-radius:2px;padding:0 8px;font-size:13px">
+            <button onClick="{{ addDocFinding }}" style="align-self:flex-start;height:36px;padding:0 14px;background:#000;color:#fff;border:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Add finding</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.notes }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:32px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <textarea placeholder="District opened two campuses in FY2023; likely explains the utility increase." value="{{ noteDraft }}" onChange="{{ onNoteDraft }}" rows="5" style="border:1px solid #C9C7C2;border-radius:2px;padding:10px;font-size:13.5px;resize:vertical"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><span style="font-size:11.5px;color:#6E6C68">Saved on this device only. Shared team notes arrive with company sign-in (v2).</span><button onClick="{{ addNote }}" style="height:36px;padding:0 14px;background:#000;color:#fff;border:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;flex-shrink:0">Add note</button></div>
+          </div>
+          <div style="display:flex;flex-direction:column;border-top:1px solid #000">
+            <sc-for list="{{ notesList }}" as="n"><div style="padding:12px 0;border-bottom:1px solid #E2E1DE;display:flex;flex-direction:column;gap:4px"><div style="font-size:11.5px;color:#6E6C68">{{ n.date }} · this device</div><div style="font-size:14px;line-height:1.5;color:#161514">{{ n.text }}</div></div></sc-for>
+            <sc-if value="{{ noNotes }}"><div style="padding:14px 0;font-size:13px;color:#4A4845">No notes on this district yet.</div></sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ tabIs.sources }}">
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead><tr><sc-for list="{{ sourceHead }}" as="hd"><th style="text-align:left;padding:8px 14px 8px 0;border-bottom:1px solid #000;font-weight:600;white-space:nowrap">{{ hd }}</th></sc-for></tr></thead>
+            <tbody><sc-for list="{{ sourceRows }}" as="r"><tr><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE;font-weight:600;color:#000">{{ r.s }}</td><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE">{{ r.c }}</td><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE;white-space:nowrap">{{ r.f }}</td><td style="padding:9px 14px 9px 0;border-bottom:1px solid #E2E1DE">{{ r.j }}</td><td style="padding:9px 0;border-bottom:1px solid #E2E1DE;color:{{ r.gapColor }}">{{ r.g }}</td></tr></sc-for></tbody>
+          </table>
+        </div>
+        <div style="margin-top:14px;border:1px dashed #C9C7C2;padding:14px 16px;font-size:12.5px;line-height:1.5;color:#4A4845;display:flex;gap:12px;align-items:flex-start"><span style="font-size:10.5px;font-weight:700;letter-spacing:.08em;background:#000;color:#fff;padding:3px 6px;flex-shrink:0">LATER</span>District-provided data mode: once a district shares utility bills and a campus inventory, this page adds energy use intensity, cost per square foot, weather-normalized use and rough opportunity sizing. District-provided figures will carry a distinct “District data” marker, separate from public-data badges.</div>
+      </sc-if>
+    </section>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Compare Districts" style="max-width:1440px;margin:0 auto;padding:32px 32px 72px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:8px"><div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4845">Compare districts</div><h1 style="margin:0;font-family:'Source Serif 4',serif;font-size:36px;font-weight:600;letter-spacing:-.02em;color:#000">Side by side, two to four districts.</h1></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-if value="{{ canAddCompare }}">
+          <select value="" onChange="{{ onCompareAdd }}" aria-label="Add a district" style="height:38px;border:1px solid #C9C7C2;border-radius:2px;font-size:13px;padding:0 8px;background:#fff">
+            <option value="">Add a district…</option>
+            <sc-for list="{{ compareAddOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+          </select>
+          <button onClick="{{ suggestSimilar }}" style="height:38px;padding:0 14px;background:#fff;border:1px solid #000;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Suggest similar districts</button>
+        </sc-if>
+        <button onClick="{{ compareCsv }}" style="height:38px;padding:0 14px;background:#fff;border:1px solid #000;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">CSV</button>
+        <button onClick="{{ compareGraphic }}" style="height:38px;padding:0 14px;background:#0082FF;color:#fff;border:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Export graphic</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <div style="display:grid;grid-template-columns:{{ cmpCols }};min-width:760px;border-top:1px solid #000">
+        <div style="padding:14px 16px 14px 0;font-size:12px;color:#4A4845;border-bottom:1px solid #000">Peers for percentiles and “Suggest similar” use the operations peer definition.</div>
+        <sc-for list="{{ cmpHeads }}" as="c">
+          <div style="padding:14px 16px;border-bottom:1px solid #000;border-left:1px solid #E2E1DE;display:flex;justify-content:space-between;gap:8px;align-items:flex-start;background:{{ c.bg }}">
+            <button onClick="{{ c.onOpen }}" style="text-align:left;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;gap:3px"><span style="font-family:'Source Serif 4',serif;font-size:19px;font-weight:600;color:#000">{{ c.name }}</span><span style="font-size:11.5px;color:#4A4845">{{ c.sub }}</span></button>
+            <button onClick="{{ c.onRemove }}" aria-label="Remove" style="width:24px;height:24px;border:1px solid #E2E1DE;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+          </div>
+        </sc-for>
+        <sc-for list="{{ cmpRows }}" as="r">
+          <sc-if value="{{ r.isGroup }}"><div style="grid-column:1/-1;padding:16px 0 6px;font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000;border-bottom:1px solid #C9C7C2">{{ r.label }}</div></sc-if>
+          <sc-if value="{{ r.isRow }}">
+            <div style="padding:9px 16px 9px 0;font-size:12.5px;color:#2D2C2A;border-bottom:1px solid #EFEEEC">{{ r.label }}</div>
+            <sc-for list="{{ r.cells }}" as="cl"><div style="padding:9px 16px;border-bottom:1px solid #EFEEEC;border-left:1px solid #E2E1DE;display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="display:flex;flex-direction:column;gap:1px"><span style="font-size:13.5px;font-weight:600;color:{{ cl.color }}">{{ cl.v }}</span><span style="font-size:11px;color:#6E6C68">{{ cl.sub }}</span></div>{{ cl.spark }}</div></sc-for>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+    <div style="font-size:11.5px;color:#6E6C68;line-height:1.5">Illustrative data. Sources: TEA PEIMS FY2025 actuals, Texas Comptroller tax rates 2023-24 and property values TY2025, Bond Review Board debt FY2025, bond elections through May 2026.</div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isBrief }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Brief Preview" style="background:#EFEEEC;min-height:calc(100vh - 90px);display:flex;flex-direction:column">
+    <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;gap:16px;padding:14px 32px;background:#fff;border-bottom:1px solid #E2E1DE;flex-wrap:wrap">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button onClick="{{ backFromBrief }}" style="background:none;border:0;padding:0;font-size:13px;color:#0082FF;cursor:pointer">← Back to {{ briefDistrictName }}</button>
+        <select value="{{ briefTemplate }}" onChange="{{ onBriefTemplate }}" aria-label="Brief template" style="height:34px;border:1px solid #C9C7C2;border-radius:2px;font-size:13px;padding:0 8px;background:#fff">
+          <sc-for list="{{ templateOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for>
+        </select>
+        <div style="display:flex;border:1px solid #000"><sc-for list="{{ variantOptions }}" as="o"><button onClick="{{ o.onClick }}" style="height:32px;padding:0 12px;border:0;background:{{ o.bg }};color:{{ o.fg }};font-size:12px;font-weight:600;cursor:pointer">{{ o.label }}</button></sc-for></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center"><span style="font-size:12px;color:#4A4845">{{ briefIncludedLabel }}</span><button onClick="{{ openTray }}" style="height:36px;padding:0 14px;background:#fff;border:1px solid #000;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Edit in tray</button><button onClick="{{ printBrief }}" style="height:36px;padding:0 14px;background:#0082FF;color:#fff;border:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Print / PDF</button></div>
+    </div>
+    <div style="padding:32px;display:flex;justify-content:center;overflow:auto">
+      <div style="box-shadow:0 8px 28px rgba(0,0,0,.10);background:#fff;width:816px;height:1056px;flex-shrink:0">
+        <dc-import name="One Page Brief" variant="{{ briefVariant }}" template="{{ briefTemplate }}" district-id="{{ briefDistrict }}" findings="{{ briefFindings }}" questions="{{ briefQuestions }}" chart-keys="{{ briefChartKeys }}" peer-overrides="{{ peerOv }}" hint-size="816px,1056px"></dc-import>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isMethod }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Methodology" style="max-width:760px;margin:0 auto;padding:40px 32px 80px;display:flex;flex-direction:column;gap:20px">
+    <div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4A4845">Methodology</div>
+    <h1 style="margin:0;font-family:'Source Serif 4',serif;font-size:36px;font-weight:600;letter-spacing:-.02em;color:#000;line-height:1.15">What this tool can and cannot tell you.</h1>
+    <p style="margin:0;font-family:'Source Serif 4',serif;font-size:20px;line-height:1.5;color:#000;border-left:2px solid #0082FF;padding-left:20px">The dashboard identifies credible, evidence-backed hypotheses. It cannot diagnose building condition or guarantee savings without district-specific facility and utility data.</p>
+    <div style="font-size:15px;line-height:1.65;color:#2D2C2A;display:flex;flex-direction:column;gap:12px">
+      <p style="margin:0">Findings are phrased as observations, possible explanations and a question. All costs are per student; district square footage isn’t publicly available. “Utilities” means PEIMS utility spending, which combines electricity, gas, water, wastewater and telephone. The federal FY2020 figure is labeled “federal energy estimate (FY2020)”.</p>
+      <p style="margin:0"><strong style="color:#000">Operations peers</strong> match on {{ critOps }}. <strong style="color:#000">Capital peers</strong> match on {{ critCap }}. Comparisons use medians of the district, its peers, its ESC region and the state.</p>
+      <p style="margin:0;color:#6E6C68">Full definitions, formulas, retrieval dates and known gaps are planned for the next pass.</p>
+    </div>
+  </div>
+  </sc-if>
+
+  </main>
+
+  <sc-if value="{{ trayOpen }}">
+  <aside class="no-print" aria-label="Brief builder" style="position:fixed;top:0;right:0;bottom:0;width:420px;background:#fff;border-left:1px solid #000;z-index:50;display:flex;flex-direction:column;box-shadow:0 8px 28px rgba(0,0,0,.10)">
+    <div style="padding:18px 22px 14px;border-bottom:1px solid #E2E1DE;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#000">Brief builder</div><button onClick="{{ toggleTray }}" aria-label="Close" style="width:28px;height:28px;border:1px solid #E2E1DE;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <select value="{{ briefDistrict }}" onChange="{{ onBriefDistrict }}" aria-label="District" style="height:34px;border:1px solid #C9C7C2;border-radius:2px;font-size:12.5px;padding:0 6px;background:#fff;min-width:0"><sc-for list="{{ briefDistrictOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+        <select value="{{ briefTemplate }}" onChange="{{ onBriefTemplate }}" aria-label="Template" style="height:34px;border:1px solid #C9C7C2;border-radius:2px;font-size:12.5px;padding:0 6px;background:#fff;min-width:0"><sc-for list="{{ templateOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px 22px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:13px;font-weight:700;color:#000">Findings</span><span style="font-size:11.5px;color:#6E6C68">Only Include items export. First 3 appear.</span></div>
+        <sc-for list="{{ trayItems }}" as="it">
+          <div style="border:1px solid {{ it.border }};border-radius:4px;padding:12px;display:flex;flex-direction:column;gap:8px;background:{{ it.bg }}">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+              <span style="font-size:13px;font-weight:700;color:#000">{{ it.title }}</span>
+              <div style="display:flex;gap:4px">
+                <button onClick="{{ it.onUp }}" aria-label="Move up" style="width:24px;height:24px;border:1px solid #E2E1DE;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"></path></svg></button>
+                <button onClick="{{ it.onDown }}" aria-label="Move down" style="width:24px;height:24px;border:1px solid #E2E1DE;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg></button>
+                <button onClick="{{ it.onRemove }}" aria-label="Unpin" style="width:24px;height:24px;border:1px solid #E2E1DE;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+              </div>
+            </div>
+            <textarea value="{{ it.text }}" onChange="{{ it.onEdit }}" rows="3" aria-label="Finding text" style="border:1px solid #E2E1DE;border-radius:2px;padding:7px;font-size:12.5px;line-height:1.45;resize:vertical;background:#fff"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <select value="{{ it.dispKey }}" onChange="{{ it.onDispChange }}" aria-label="Disposition" style="height:28px;border:1px solid #C9C7C2;border-radius:2px;font-size:12px;padding:0 6px;background:#fff"><option value="">No disposition</option><sc-for list="{{ dispOptionsPlain }}" as="o"><option value="{{ o.k }}">{{ o.label }}</option></sc-for></select>
+              <span style="font-size:11px;color:{{ it.stateColor }}">{{ it.stateLabel }}</span>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ trayEmpty }}"><div style="border:1px dashed #C9C7C2;padding:16px;font-size:12.5px;line-height:1.5;color:#4A4845">No findings pinned for this district. Use “Pin to brief” on any hypothesis card.</div></sc-if>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:700;color:#000">Questions worth exploring</span>
+        <sc-for list="{{ trayQuestions }}" as="qq"><textarea value="{{ qq.text }}" onChange="{{ qq.onEdit }}" rows="2" aria-label="Discovery question" style="border:1px solid #E2E1DE;border-radius:2px;padding:7px;font-size:12.5px;line-height:1.45;resize:vertical;font-family:'Source Serif 4',serif"></textarea></sc-for>
+        <button onClick="{{ addQuestion }}" style="align-self:flex-start;background:none;border:0;padding:0;font-size:12.5px;color:#0082FF;cursor:pointer">+ Add a question</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:700;color:#000">Charts (at most two)</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <select value="{{ briefChart1 }}" onChange="{{ onBriefChart1 }}" aria-label="Primary chart" style="height:32px;border:1px solid #C9C7C2;border-radius:2px;font-size:12px;padding:0 6px;background:#fff;min-width:0"><sc-for list="{{ chartOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+          <select value="{{ briefChart2 }}" onChange="{{ onBriefChart2 }}" aria-label="Secondary chart" style="height:32px;border:1px solid #C9C7C2;border-radius:2px;font-size:12px;padding:0 6px;background:#fff;min-width:0"><sc-for list="{{ chartOptions }}" as="o"><option value="{{ o.v }}">{{ o.label }}</option></sc-for></select>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:13px;font-weight:700;color:#000">Notes for the meeting</span>
+        <textarea value="{{ briefNotes }}" onChange="{{ onBriefNotes }}" rows="3" placeholder="Internal only; not printed." style="border:1px solid #E2E1DE;border-radius:2px;padding:7px;font-size:12.5px;resize:vertical"></textarea>
+      </div>
+    </div>
+    <div style="padding:14px 22px;border-top:1px solid #E2E1DE;display:flex;gap:8px">
+      <button onClick="{{ previewBrief }}" style="flex:1;height:42px;background:#0082FF;color:#fff;border:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer" style-hover="background:#0068CC">Preview at letter size</button>
+    </div>
+  </aside>
+  </sc-if>
+
+  <sc-if value="{{ toast }}">
+    <div role="status" style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#000;color:#fff;padding:12px 18px;font-size:13px;z-index:60;max-width:520px;box-shadow:0 8px 28px rgba(0,0,0,.10)">{{ toast }}</div>
+  </sc-if>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;cardStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Compact&quot;,&quot;Ledger&quot;],&quot;default&quot;:&quot;Compact&quot;,&quot;tsType&quot;:&quot;'Compact'|'Ledger'&quot;,&quot;section&quot;:&quot;Variations&quot;},&quot;tableStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Evidence matrix&quot;,&quot;Chips&quot;],&quot;default&quot;:&quot;Evidence matrix&quot;,&quot;tsType&quot;:&quot;'Evidence matrix'|'Chips'&quot;,&quot;section&quot;:&quot;Variations&quot;},&quot;skipUnlock&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+const DISP=[{k:'include',label:'Include',icon:'M20 6 9 17l-5-5'},{k:'investigate',label:'Investigate',icon:'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4'},{k:'explained',label:'Explained by district',icon:'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'},{k:'notrelevant',label:'Not relevant',icon:'M18 6 6 18M6 6l12 12'},{k:'followup',label:'Follow up',icon:'M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7'}];
+const LENSES=[{k:'pc',label:'Performance Contracting',desc:'Utility-cost pressure and budget growth that operating savings could address'},{k:'om',label:'Facilities O&M',desc:'Operating-model shifts and plant maintenance & operations cost levels'},{k:'cap',label:'Capital Planning (FCA/Bond)',desc:'Capital-planning signals: timing, fiscal capacity and community support'}];
+const LENS_GROUP={pc:'Performance contracting',om:'Facilities O&M',cap:'Capital-planning signals',doc:'From district documents'};
+const RESEARCH=['Adopted budget','Annual financial report','Facility master plan','Capital improvement plan','Bond website','Bond proposition language','Board agendas','Energy management plan','Recent RFQs/RFPs','Strategic plan'];
+const SIG_COLS={pc:[['util-level','Utilities vs peers'],['util-growth','Utility growth FY21–25'],['util-budget','FY26 utility budget']],om:[['op-shift','Contracted repair'],['f51-level','Plant M&O vs peers'],['cap-in-f51','Capital in Plant M&O']],cap:[['cap-timing','Since passed bond'],['growth','Enrollment 5 yr'],['retire','Retiring by FY31'],['capacity','I&S rate']]};
+const TEMPLATES=[{v:'pc',label:'Performance Contracting Opportunity Brief'},{v:'om',label:'Facilities O&M Brief'},{v:'cap',label:'FCA & Bond Planning Brief'},{v:'gen',label:'General District Research Brief'}];
+const TPL_CHARTS={pc:['util','yoy'],om:['comp','f51'],cap:['debt','bonds'],gen:['util','debt']};
+const CHART_LABELS={util:'Utilities per student vs peers',yoy:'Utility year-over-year change',comp:'Plant M&O mix',f51:'Plant M&O per student vs peers',debt:'Debt retirement profile',bonds:'Bond election timeline',pv:'Property value per student',is:'I&S tax rate',mo:'M&O tax rate',mix:'Spending by function',total:'Total spending per student',enroll:'Enrollment trend'};
+const PERSIST=['radarTable','disp','pins','edits','qEdits','extraQs','notes','research','docFindings','peerOv','compareIds','briefNotes','briefCharts','briefDistrict','briefTemplate','briefVariant'];
+const LS='upchurch-txr-research-v1';
+const STATUS_ICON={none:'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z',prog:'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM20 20l-4-4',brief:'M20 6 9 17l-5-5',rev:'M5 12h14'};
+const bars=n=>[0,1,2].map(i=>({h:(5+i*3.5)+'px',bg:i<n?'#161514':'#E2E1DE'}));
+const strengthN=s=>({Strong:3,Moderate:2,Weak:1,Limited:1,Documented:3}[s]||0);
+
+class Component extends DCLogic {
+  state = { unlocked:false,keyInput:'',remember:true,keyError:false,
+    screen:'radar',lens:'pc',q:'',region:'all',band:'all',locale:'all',fy:'FY2025',charters:false,sort:{k:'default',dir:-1},mapOpen:true,showAll:false,
+    districtId:'keller',tab:'op',expanded:{},exportOpen:null,tableView:{},peerSet:'ops',aspect:'slide',exportTransparent:false,
+    lookup:'',trayOpen:false,saveMenu:false,toast:null,docText:'',docSrc:'',noteDraft:'',savedAt:null,
+    disp:{},pins:[],edits:{},qEdits:{},extraQs:{},notes:{},research:{},docFindings:{},peerOv:{},compareIds:['keller','mesquite-flats','trinity-bend'],briefNotes:'',briefCharts:{},briefDistrict:'keller',briefTemplate:'pc',briefVariant:'A' };
+
+  componentDidMount(){
+    try{ const s=JSON.parse(localStorage.getItem(LS)||'null'); if(s){ const o={}; PERSIST.forEach(k=>{ if(s[k]!==undefined) o[k]=s[k]; }); o.savedAt=s.savedAt||null; this.setState(o); } }catch(e){}
+    const unlocked=this.props.skipUnlock===true || localStorage.getItem('upchurch-txr-unlock')==='1' || sessionStorage.getItem('upchurch-txr-unlock')==='1';
+    this.setState(Object.assign({unlocked},this.readHash()));
+    if(!window.TXR){ this._t=setInterval(()=>{ if(window.TXR){ clearInterval(this._t); this.forceUpdate(); } },50); }
+    this._key=e=>{ if(e.key==='Escape') this.setState({trayOpen:false,exportOpen:null,saveMenu:false,lookup:''}); };
+    window.addEventListener('keydown',this._key);
+  }
+  componentWillUnmount(){ clearInterval(this._t); window.removeEventListener('keydown',this._key); }
+  componentDidUpdate(){
+    const snap={}; PERSIST.forEach(k=>snap[k]=this.state[k]); const js=JSON.stringify(snap);
+    if(this._last!==undefined && js!==this._last){ const at=new Date().toISOString(); try{ localStorage.setItem(LS,JSON.stringify(Object.assign({},snap,{savedAt:at}))); }catch(e){} this._last=js; this.setState({savedAt:at}); return; }
+    this._last=js;
+    const s=this.state; const p=new URLSearchParams(); p.set('v',s.screen); p.set('lens',s.lens);
+    if(s.region!=='all') p.set('region',s.region); if(s.band!=='all') p.set('band',s.band); if(s.locale!=='all') p.set('locale',s.locale); if(s.charters) p.set('charters','1'); if(s.q) p.set('q',s.q);
+    if(s.screen==='district'){ p.set('d',s.districtId); p.set('tab',s.tab); } if(s.screen==='compare') p.set('ids',s.compareIds.join(','));
+    const h='#'+p.toString(); if(location.hash!==h){ try{ history.replaceState(null,'',h); }catch(e){} }
+  }
+  readHash(){
+    try{ const p=new URLSearchParams(location.hash.slice(1)); const o={}; if(!p.get('v')) return o;
+      o.screen=p.get('v'); if(p.get('lens')) o.lens=p.get('lens'); ['region','band','locale','q'].forEach(k=>{ if(p.get(k)) o[k]=p.get(k); });
+      if(p.get('charters')) o.charters=true; if(p.get('d')) o.districtId=p.get('d'); if(p.get('tab')) o.tab=p.get('tab'); if(p.get('ids')) o.compareIds=p.get('ids').split(',');
+      return o; }catch(e){ return {}; }
+  }
+  flash(msg){ clearTimeout(this._toast); this.setState({toast:msg}); this._toast=setTimeout(()=>this.setState({toast:null}),3200); }
+  go(screen,extra){ this.setState(Object.assign({screen,lookup:'',saveMenu:false,exportOpen:null},extra||{})); try{ window.scrollTo(0,0); }catch(e){} }
+  openDistrict(id,tab){ this.go('district',{districtId:id,tab:tab||this.state.tab||'op'}); }
+  download(name,text,type){ const b=new Blob([text],{type:type||'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; document.body.appendChild(a); a.click(); a.remove(); }
+  csv(head,rows){ const q=v=>{ v=String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }; return [head].concat(rows).map(r=>r.map(q).join(',')).join('\n'); }
+
+  docCards(did){ return (this.state.docFindings[did]||[]).map(f=>({id:did+':'+f.id,district:did,key:f.id,lens:'doc',title:'District document finding',strength:'Documented',dollarsLabel:f.src||'Source not noted',period:f.date,group:'District document',peerSet:'ops',fresh:'Added '+f.date,text:f.text,caveat:null,ask:null,chart:null})); }
+  allCards(did,T){ const d=T.byId[did]; if(!d) return []; return T.cards(T.derive(d,this.state.peerOv)).concat(this.docCards(did)); }
+  togglePin(c){ this.setState(s=>{ const on=s.pins.includes(c.id); const pins=on?s.pins.filter(p=>p!==c.id):s.pins.concat([c.id]); const disp=Object.assign({},s.disp); if(!on&&!disp[c.id]) disp[c.id]='include'; return {pins,disp,briefDistrict:on?s.briefDistrict:c.district}; }); if(!this.state.pins.includes(c.id)) this.flash('Pinned “'+c.title+'” to the brief'); }
+  setDisp(id,k){ this.setState(s=>({disp:Object.assign({},s.disp,{[id]:k})})); }
+  statusOf(did){ const ds=Object.keys(this.state.disp).filter(k=>k.startsWith(did+':')).map(k=>this.state.disp[k]);
+    if(ds.includes('include')) return {label:'In brief',icon:STATUS_ICON.brief,color:'#004E99'};
+    if(ds.includes('investigate')||ds.includes('followup')) return {label:'Investigating',icon:STATUS_ICON.prog,color:'#000'};
+    if(ds.length) return {label:'Reviewed',icon:STATUS_ICON.rev,color:'#4A4845'};
+    return {label:'Not reviewed',icon:STATUS_ICON.none,color:'#6E6C68'}; }
+
+  renderVals(){
+    const T=window.TXR; const s=this.state; const h=React.createElement; const set=o=>this.setState(o);
+    const base={locked:!s.unlocked,unlocked:s.unlocked,keyInput:s.keyInput,remember:s.remember,keyError:s.keyError,
+      onKeyInput:e=>set({keyInput:e.target.value,keyError:false}),onRemember:e=>set({remember:e.target.checked}),
+      onUnlock:e=>{ e.preventDefault(); if(!s.keyInput.trim()){ set({keyError:true}); return; } try{ (s.remember?localStorage:sessionStorage).setItem('upchurch-txr-unlock','1'); }catch(err){} set({unlocked:true,keyInput:''}); }};
+    if(!T||!s.unlocked) return Object.assign(base,{navItems:[],rows:[],tiles:[],lenses:[]});
+    const $=T.$, $M=T.$M, pct=T.pct;
+    const lens=s.lens;
+    const deriveCache={}; const der=d=>deriveCache[d.id]||(deriveCache[d.id]=T.derive(d,s.peerOv));
+    const nav=[['radar','Opportunity Radar'],['compare','Compare'],['method','Methodology']].map(([k,l])=>({label:l,line:s.screen===k||(k==='radar'&&s.screen==='district')?'#000':'transparent',weight:s.screen===k?700:500,onClick:()=>this.go(k)}));
+    const lk=s.lookup.trim().toLowerCase(); const lookupResults=lk?T.D.filter(d=>d.name.toLowerCase().includes(lk)).slice(0,6).map(d=>({name:d.name,sub:d.county+' · Region '+d.region+(d.charter?' · Charter':''),onClick:()=>this.openDistrict(d.id)})):[];
+
+    // ---------- radar ----------
+    const filt=T.D.filter(d=>(s.charters||!d.charter)&&(s.region==='all'||String(d.region)===String(s.region))&&(s.band==='all'||d.band===s.band)&&(s.locale==='all'||d.locale===s.locale)&&(!s.q||d.name.toLowerCase().includes(s.q.toLowerCase())));
+    const all=filt.map(d=>{ const x=der(d); return {d,x,L:x.lens[lens],S:x.S[lens]}; });
+    const surfaced=all.filter(r=>r.L.count>0);
+    let list=(s.showAll?all:surfaced).slice();
+    const sk=s.sort.k, dir=s.sort.dir;
+    const evN={Strong:3,Moderate:2,Limited:1,None:0};
+    list.sort((a,b)=>{ let v=0;
+      if(sk==='name') v=a.d.name.localeCompare(b.d.name)*-1; else if(sk==='mag') v=a.L.mag-b.L.mag; else if(sk==='evidence') v=evN[a.L.evidence]-evN[b.L.evidence]||a.L.mag-b.L.mag; else if(sk==='pct') v=(a.L.pctile??-1)-(b.L.pctile??-1);
+      else v=a.L.count-b.L.count||a.L.mag-b.L.mag; return v*dir; });
+    const cols=SIG_COLS[lens];
+    const rows=list.map(({d,x,L,S})=>{ const st=this.statusOf(d.id); const fired=S.filter(z=>z.fires);
+      return {name:d.name,sub:d.county+' · Region '+d.region+' · '+T.num(d.enroll)+' students',chips:fired.slice(0,3).map(z=>z.chip),noChips:!fired.length,noChipsText:L.missing?'Debt data not available for charter schools':'No signals under this lens',
+        cells:cols.map(([k])=>{ const z=S.find(q=>q.k===k); if(!z) return {val:'n/a',fill:'transparent',border:'#E2E1DE',weight:400,color:'#9C9A95'}; return {val:z.val,fill:z.fires?'#0082FF':'transparent',border:z.fires?'#0082FF':'#C9C7C2',weight:z.fires?600:400,color:z.fires?'#000':'#6E6C68'}; }),
+        mag:L.magLabel,magSub:L.magSub,evidence:L.evidence==='None'?'No signals':L.evidence,bars:bars(evN[L.evidence]),timing:L.timing,spark:T.spark(h,L.spark),pctile:L.pctile==null?'n/a':T.ord(L.pctile),
+        status:st.label,statusIcon:st.icon,statusColor:st.color,open:()=>this.openDistrict(d.id),onKey:e=>{ if(e.key==='Enter') this.openDistrict(d.id); }}; });
+    const sortCol=(k,label,align)=>({label,align:align||'left',sortable:true,plain:false,color:s.sort.k===k?'#000':'#4A4845',arrow:s.sort.k===k?(s.sort.dir<0?'↓':'↑'):'',onSort:()=>set({sort:{k,dir:s.sort.k===k?-s.sort.dir:-1}})});
+    const plain=(label,align)=>({label,align:align||'left',sortable:false,plain:true});
+    const tStyle=s.radarTable||this.props.tableStyle||'Evidence matrix';
+    const chipTable=tStyle==='Chips';
+    const tableViewOptions=[['Evidence matrix','Evidence matrix'],['Chips','Signal chips']].map(([k,l])=>({label:l,active:tStyle===k,bg:tStyle===k?'#000':'#fff',fg:tStyle===k?'#fff':'#000',onClick:()=>set({radarTable:k})}));
+    const tableHead=[sortCol('name','District')].concat(chipTable?[sortCol('default','Why surfaced')]:cols.map(([,l])=>plain(l))).concat([sortCol('mag','Magnitude','right'),sortCol('evidence','Evidence'),plain('Timing'),plain('Trend')]).concat(chipTable?[sortCol('pct','Peer pctl','right')]:[]).concat([plain('Research status')]);
+    const lensMeta={pc:{addr:'Addressable utilities',addrSub:'total annual utilities spend, filtered set',med:'Median utilities per student',medv:T.median(all.map(r=>r.d.utilPS)),medFmt:v=>$(v),medUnit:'/student',fresh:'PEIMS actuals FY2025',mapTitle:'Utilities per student, median by region',map:d=>d.utilPS,mapFmt:v=>$(v)},
+      om:{addr:'Plant M&O spending',addrSub:'total annual Function 51, filtered set',med:'Median plant M&O per student',medv:T.median(all.map(r=>r.d.f51PS)),medFmt:v=>$(v),medUnit:'/student',fresh:'PEIMS actuals FY2025',mapTitle:'Plant M&O per student, median by region',map:d=>d.f51PS,mapFmt:v=>$(v)},
+      cap:{addr:'Principal retiring by FY2031',addrSub:'existing debt, filtered set',med:'Median years since passed bond',medv:T.median(all.map(r=>r.d.ysb)),medFmt:v=>v==null?'—':String(Math.round(v)),medUnit:'years',fresh:'Debt FY2025 · bonds May 2026',mapTitle:'Principal retiring by FY2031 per student, median by region',map:d=>d.retire5!=null?d.retire5/d.enroll:null,mapFmt:v=>$(v)}}[lens];
+    const recent=[]; filt.forEach(d=>d.bonds.forEach(b=>{ if(b.monthsAgo<=12) recent.push(b); }));
+    const tiles=[{label:'Districts with signals',value:String(surfaced.length),unit:'of '+all.length,sub:'at least one signal under this lens',fresh:lensMeta.fresh},
+      {label:lensMeta.addr,value:$M(all.reduce((a,r)=>a+(r.L.mag||0),0)),unit:lens==='cap'?'':'/yr',sub:lensMeta.addrSub,fresh:lensMeta.fresh},
+      {label:'Recent bond activity',value:String(recent.length),unit:recent.length===1?'election':'elections',sub:recent.filter(b=>b.passed).length+' passed, '+$M(recent.filter(b=>b.passed).reduce((a,b)=>a+b.amt*1e6,0))+' approved, last 12 months',fresh:'Bond elections through May 2026'},
+      {label:lensMeta.med,value:lensMeta.medFmt(lensMeta.medv),unit:lensMeta.medUnit,sub:'districts in current filter',fresh:lensMeta.fresh}];
+    // map
+    const regVals={}; filt.forEach(d=>{ const v=lensMeta.map(d); if(v!=null){ (regVals[d.region]=regVals[d.region]||[]).push(v); } });
+    const meds=Object.keys(regVals).map(r=>T.median(regVals[r])); const lo=Math.min(...meds), hi=Math.max(...meds);
+    const ramp=['#E5F2FF','#B8DBFF','#5CACFF','#0082FF','#004E99'];
+    const mapTiles=Object.keys(T.TILE).map(r=>{ const [c,rw]=T.TILE[r]; const v=regVals[r]?T.median(regVals[r]):null; const idx=v==null?-1:hi===lo?2:Math.min(4,Math.floor((v-lo)/(hi-lo)*5));
+      const active=String(s.region)===String(r);
+      return {n:r,short:T.REGION_NAMES[r].split(' ')[0].slice(0,7),col:c,row:rw,bg:v==null?'repeating-linear-gradient(45deg,#fff 0 3px,#EFEEEC 3px 6px)':ramp[idx],fg:idx>=3?'#fff':'#161514',border:active?'2px solid #000':'1px solid '+(v==null?'#E2E1DE':'transparent'),
+        title:'Region '+r+' '+T.REGION_NAMES[r]+': '+(v==null?'no districts in current filter':lensMeta.mapFmt(v)+' median, '+regVals[r].length+' districts'),onClick:()=>set({region:active?'all':String(r)})}; });
+    const opt=(v,label)=>({v:String(v),label});
+    const radar={lenses:LENSES.map(l=>({label:l.label,desc:l.desc,active:l.k===lens,bg:l.k===lens?'#000':'#fff',fg:l.k===lens?'#fff':'#000',onClick:()=>set({lens:l.k,sort:{k:'default',dir:-1}})})),
+      q:s.q,onQ:e=>set({q:e.target.value}),region:String(s.region),onRegion:e=>set({region:e.target.value}),band:s.band,onBand:e=>set({band:e.target.value}),locale:s.locale,onLocale:e=>set({locale:e.target.value}),fy:s.fy,onFy:e=>set({fy:e.target.value}),charters:s.charters,onCharters:e=>set({charters:e.target.checked}),
+      regionOptions:[opt('all','All ESC regions')].concat(Object.keys(T.REGION_NAMES).map(r=>opt(r,'Region '+r+' · '+T.REGION_NAMES[r]))),bandOptions:[opt('all','All enrollment')].concat(T.BANDS.map(b=>opt(b,b+' students'))),localeOptions:[opt('all','All locales')].concat(T.LOCALES.map(l=>opt(l,l))),
+      hasFilters:s.region!=='all'||s.band!=='all'||s.locale!=='all'||!!s.q||s.charters,clearFilters:()=>set({region:'all',band:'all',locale:'all',q:'',charters:false}),
+      tiles,rows,tableHead,chipTable,tableViewOptions,matrixTable:!chipTable,tableMin:chipTable?'980px':'1040px',noRows:!rows.length,rowCount:rows.length,rowCountLabel:s.showAll?'districts in the current filter':'districts surface under this lens',
+      showAllLabel:s.showAll?'Show only surfaced districts':'Show all '+all.length+' districts',toggleShowAll:()=>set({showAll:!s.showAll}),
+      mapOpen:s.mapOpen,toggleMap:()=>set({mapOpen:!s.mapOpen}),mapToggleLabel:s.mapOpen?'Hide map':'Show map',radarCols:s.mapOpen?'minmax(0,1fr) 296px':'minmax(0,1fr)',
+      mapTiles,mapTitle:lensMeta.mapTitle,mapFresh:lensMeta.fresh.split(' · ')[0],mapLo:meds.length?lensMeta.mapFmt(lo):'',mapHi:meds.length?lensMeta.mapFmt(hi):''};
+
+    // ---------- district ----------
+    const d=T.byId[s.districtId]||T.byId.keller; const x=der(d); const m=x.m;
+    const cardStyleA=(this.props.cardStyle||'Compact')==='Ledger';
+    const cards=T.cards(x).concat(this.docCards(d.id));
+    const mkCard=c=>{ const dk=s.disp[c.id]||''; const pinned=s.pins.includes(c.id);
+      return Object.assign({},c,{text:s.edits[c.id]||c.text,bars:bars(strengthN(c.strength)),hasCaveat:!!c.caveat,hasAsk:!!c.ask,hasChart:!!c.chart,source:c.lens==='doc'?'':'Source: '+(c.fresh||'').split(' ')[0],
+        disp:DISP.map(o=>({k:o.k,label:o.label,icon:o.icon,active:dk===o.k,bg:dk===o.k?'#000':'#fff',fg:dk===o.k?'#fff':'#2D2C2A',border:dk===o.k?'#000':'#E2E1DE',onClick:()=>this.setDisp(c.id,dk===o.k?'':o.k)})),
+        dispKey:dk,onDispChange:e=>this.setDisp(c.id,e.target.value),pinned,pinLabel:pinned?'Pinned to brief':'Pin to brief',pinColor:pinned?'#004E99':'#000',
+        expanded:!!s.expanded[c.id],chevRot:s.expanded[c.id]?'180deg':'0deg',onToggle:()=>set({expanded:Object.assign({},s.expanded,{[c.id]:!s.expanded[c.id]})}),
+        onPin:()=>this.togglePin(c),onEvidence:()=>set({tab:['debt','bonds','is','mo','pv'].includes(c.chart)?'cap':'op'}),onNote:()=>set({tab:'notes',noteDraft:'Re: '+c.title+'. '}),onPeers:()=>set({tab:'peers',peerSet:c.peerSet||'ops'})}); };
+    const order=[lens].concat(['pc','om','cap'].filter(l=>l!==lens)).concat(['doc']);
+    const cardGroups=order.map(l=>{ const cs=cards.filter(c=>c.lens===l).map(mkCard); if(l==='doc'&&!cs.length) return null;
+      return {label:LENS_GROUP[l],cards:cs,countLabel:cs.length?cs.length+(cs.length===1?' hypothesis':' hypotheses'):'',empty:!cs.length,emptyText:l==='cap'&&d.charter?'Debt and bond data are not available for charter schools.':'No signals fire under this lens with current peers and data.'}; }).filter(Boolean);
+    const le=d.lastElection;
+    const dStats=[{label:'Enrollment',value:T.num(d.enroll),sub:pct(d.g5,1)+' over 5 years'},{label:'Campuses',value:String(d.campuses),sub:d.levels.elementary+' elem · '+d.levels.middle+' middle · '+d.levels.high+' high'+(d.levels.other?' · '+d.levels.other+' other':'')},
+      {label:'Plant M&O budget, FY2026',value:$M(d.f51PS*d.enroll*(1+d.f5126/100)),sub:'Function 51'},{label:'Annual utilities',value:$M(d.utilPS*d.enroll),sub:'FY2025 actual'},
+      {label:'Most recent bond',value:le?$M(le.amt*1e6):d.charter?'Not applicable':'None on record',sub:le?le.label+' · '+(le.passed?'Passed':'Failed')+', '+le.yes+'% yes':d.charter?'Charter school':'since 1998'},
+      {label:'Outstanding debt',value:d.debt!=null?$M(d.debt):'Not available',sub:d.debt!=null?$(d.debt/d.enroll)+' per student':'Charter: no debt data'},
+      {label:'Superintendent',value:d.superName.split(' (')[0],sub:'AskTED, as of Aug 2026'}];
+    const tabs=[['op','Facilities operating profile'],['cap','Capital & bond profile'],['budget','Budget & enrollment'],['peers','Peers'],['research','Research further'],['notes','Notes'],['sources','Data & sources']].map(([k,l])=>({label:l,active:s.tab===k,line:s.tab===k?'#000':'transparent',weight:s.tab===k?700:500,onClick:()=>set({tab:k,exportOpen:null})}));
+    const ch=T.charts(x,h);
+    const tabChartKeys=s.tab==='op'?['comp','util','f51','yoy']:s.tab==='cap'&&!d.charter?['bonds','debt','pv','mo','is']:s.tab==='budget'?['mix','total','enroll']:[];
+    const tabCharts=tabChartKeys.map(k=>{ const c=ch[k]; const showTable=!!s.tableView[k]; const eo=s.exportOpen===k;
+      const cite=d.name+'. '+c.title+'. '+c.def+'. '+c.source+' '+c.peerDef+' Prepared by Upchurch, Sept 2026.';
+      return Object.assign({},c,{span:k==='comp'||k==='bonds'?'1 / -1':'auto',showTable,showChart:!showTable,tableLabel:showTable?'Chart':'Table',caveat:c.caveat||'',
+        toggleTable:()=>set({tableView:Object.assign({},s.tableView,{[k]:!showTable})}),exportOpen:eo,toggleExport:()=>set({exportOpen:eo?null:k}),
+        exportActions:[{label:'PNG',onClick:()=>{ set({exportOpen:null}); this.flash('PNG export uses the chart export frame ('+(s.aspect==='slide'?'16:9 slide':'letter width')+'). See Exports & Briefs.'); }},
+          {label:'SVG',onClick:()=>{ set({exportOpen:null}); this.flash('SVG export uses the chart export frame. See Exports & Briefs.'); }},
+          {label:'Copy image',onClick:()=>{ set({exportOpen:null}); this.flash('Image copied with title, source and attribution.'); }},
+          {label:'CSV of underlying data',onClick:()=>{ set({exportOpen:null}); this.download(d.id+'-'+k+'.csv',this.csv(c.head,c.rows)); }},
+          {label:'Copy source citation',onClick:()=>{ set({exportOpen:null}); try{ navigator.clipboard.writeText(cite); }catch(e){} this.flash('Citation copied.'); }}]}); });
+    const utilShare=Math.round(d.utilPS/d.f51PS*100);
+    const g9u=Math.round((d.utilSeries[9]/d.utilSeries[0]-1)*100), g9e=Math.round((d.enrollSeries[9]/d.enrollSeries[0]-1)*100);
+    const tileD=(label,value,delta,deltaColor,sub,fresh,sp)=>({label,value,delta,deltaColor,sub,fresh,spark:sp||null});
+    const tabTiles=s.tab==='op'?[
+      tileD('Utilities per student',$(d.utilPS),pct(x.utilRatio*100)+' vs peers','#004E99','Peer median '+$(m.util)+' · '+m.n+' districts','PEIMS FY2025',T.spark(h,d.utilSeries)),
+      tileD('Utilities share of plant M&O',utilShare+'%','','#000','Utilities combine electricity, gas, water, wastewater and telephone','PEIMS FY2025'),
+      tileD('Utility growth vs enrollment, FY2016–FY2025',pct(g9u),'enrollment '+pct(g9e),'#4A4845',(g9u-g9e>0?'Utilities outpaced enrollment by ':'Enrollment outpaced utilities by ')+Math.abs(g9u-g9e)+' pts','PEIMS FY2025',T.spark(h,d.enrollSeries,{color:'#6E6C68'})),
+      tileD('FY2026 utility budget vs FY2025 actual',pct(d.util26,1),'','#000',$M(d.utilPS*d.enroll*(1+d.util26/100))+' budgeted vs '+$M(d.utilPS*d.enroll)+' actual','PEIMS budget FY2026'),
+      tileD('Campuses per 1,000 students',d.cpk.toFixed(2),'peers '+m.cpk.toFixed(2),'#4A4845',d.campuses+' campuses; more campuses per student usually means more building area to operate','TEA campuses 2024-25'),
+      tileD('Property insurance per student',$(d.insPS),'','#000','Shown separately: market-driven, not a facilities-management signal','PEIMS FY2025')]
+      :s.tab==='budget'?[['transport','Transportation'],['security','Security & monitoring'],['capital','Capital outlay'],['plant','Plant maintenance & operations'],['total','Total expense']].map(([k,l])=>{ const v=d.fn[k]; const ch10=Math.round((v[9]/v[0]-1)*100);
+        return tileD(l+' per student',$(v[9]),pct(ch10)+' since FY2016','#4A4845','Peer median '+$(m.fnEnd[k])+' · '+$M(v[9]*d.enroll)+' total','PEIMS FY2025',T.spark(h,v)); }):[];
+    const lv=d.levels; const lvMax=Math.max(lv.elementary,lv.middle,lv.high,lv.other,1);
+    const levelRows=[['Elementary',lv.elementary],['Middle',lv.middle],['High',lv.high]].concat(lv.other?[['Other / alternative',lv.other]]:[]).map(([l,n])=>({label:l,n:String(n),w:Math.round(n/lvMax*100)+'%'}));
+    const bsum=d.charter?[]:T.bondSummary(d);
+    const tabDims=s.tab==='cap'&&!d.charter?[
+      {label:'Possible need',items:[{k:'Enrollment, 5 yr',v:pct(d.g5,1)},{k:'Capital in Plant M&O since FY21',v:pct(d.capF51Growth)},{k:'Contracted repair since FY21',v:pct(d.contractedGrowth)}]},
+      {label:'Fiscal capacity',items:[{k:'Property value per student',v:'$'+Math.round(d.pvPS/1000)+'K ('+pct(d.pvGrowth5)+')'},{k:'I&S rate vs $0.50 cap',v:'$'+d.isRate.toFixed(2)},{k:'Debt per student',v:$(d.debt/d.enroll)},{k:'Debt ÷ property value',v:(d.debt/(d.pvPS*d.enroll)*100).toFixed(1)+'%'}]},
+      {label:'Timing',items:[{k:'Principal retiring, 1 yr',v:$M(d.debtProfile[0].v-d.debtProfile[1].v)},{k:'Principal retiring, 3 yrs',v:$M(d.debtProfile[0].v-d.debtProfile[3].v)},{k:'Principal retiring, 5 yrs',v:$M(d.retire5)},{k:'Years since passed bond',v:d.lastPassed?String(d.ysb):'None since 1998'}]},
+      {label:'Community support',items:[{k:'Propositions on record',v:String(d.bonds.length)},{k:'Passed / failed',v:d.bonds.filter(b=>b.passed).length+' / '+d.bonds.filter(b=>!b.passed).length},{k:'Last margin',v:le?(le.margin>0?'+':'')+le.margin+' pts':'—'},{k:'Peer bonds, last 24 mo',v:String(m.C.reduce((a,p)=>a+p.bonds.filter(b=>b.monthsAgo<=24).length,0))}]}]:[];
+    // peers tab
+    const ps=s.peerSet; const ovKey=d.id+':'+ps; const ov=s.peerOv[ovKey]||{removed:[],added:[]};
+    const members=T.peersFor(d,ps,s.peerOv).map(id=>T.byId[id]);
+    const setOv=o=>set({peerOv:Object.assign({},s.peerOv,{[ovKey]:o})});
+    const reg=x.reg;
+    const peerTable=[{k:'Utilities per student',d:$(d.utilPS),p:$(m.util),r:$(reg.util),s:$(T.STATE.util)},{k:'Plant M&O per student',d:$(d.f51PS),p:$(m.f51),r:$(reg.f51),s:$(T.STATE.f51)},
+      {k:'Utility growth since FY2021',d:pct(d.utilGrowth),p:pct(m.utilGrowth),r:'—',s:'—'},{k:'Contracted repair growth since FY2021',d:pct(d.contractedGrowth),p:pct(m.contracted),r:'—',s:'—'},
+      {k:'Campuses per 1,000 students',d:d.cpk.toFixed(2),p:m.cpk.toFixed(2),r:'—',s:'—'},{k:'Enrollment, 5 yr',d:pct(d.g5,1),p:m.g5!=null?pct(m.g5,1):'—',r:'—',s:'—'},
+      {k:'Property value per student',d:'$'+Math.round(d.pvPS/1000)+'K',p:m.pv?'$'+Math.round(m.pv/1000)+'K':'—',r:'—',s:'—'},{k:'I&S tax rate',d:d.isRate!=null?'$'+d.isRate.toFixed(2):'Not available',p:m.isRate!=null?'$'+m.isRate.toFixed(2):'—',r:'—',s:'—'}];
+    // research
+    const rs=s.research[d.id]||{};
+    const setR=(item,patch)=>set({research:Object.assign({},s.research,{[d.id]:Object.assign({},rs,{[item]:Object.assign({status:'Not checked',url:'',note:''},rs[item]||{},patch)})})});
+    const researchItems=RESEARCH.map(it=>{ const v=Object.assign({status:'Not checked',url:'',note:''},rs[it]||{});
+      return {label:it,url:v.url,note:v.note,onUrl:e=>setR(it,{url:e.target.value}),onNote:e=>setR(it,{note:e.target.value}),
+        statuses:['Not checked','Found','Not available'].map(st=>({label:st,bg:v.status===st?'#000':'#fff',fg:v.status===st?'#fff':'#2D2C2A',onClick:()=>setR(it,{status:st})}))}; });
+    const found=RESEARCH.filter(it=>(rs[it]||{}).status==='Found').length, na=RESEARCH.filter(it=>(rs[it]||{}).status==='Not available').length;
+    const today=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const notesList=(s.notes[d.id]||[]).slice().reverse();
+    const sourceRows=[
+      {s:'TEA PEIMS Financial Actuals',c:'Spending by function incl. Function 51 object detail',f:'FY2025 actuals',j:'District ID',g:'None known',gapColor:'#2D2C2A'},
+      {s:'TEA PEIMS Summarized Actuals',c:'Spending by function (instruction, transportation, security, capital outlay, total), fall enrollment',f:'FY2009–FY2025',j:'District ID',g:'None known',gapColor:'#2D2C2A'},
+      {s:'TEA TAPR / A–F ratings',c:'District and campus accountability ratings',f:'Not loaded',j:'District ID',g:'Manual download pending',gapColor:'#B8740B'},
+      {s:'TEA PEIMS Budgets',c:'Adopted budgets by function and object',f:'FY2026 budgets',j:'District ID',g:'None known',gapColor:'#2D2C2A'},
+      {s:'Texas Comptroller',c:'M&O and I&S tax rates; property values',f:'Rates 2023-24 · values TY2025',j:'District ID',g:d.charter?'Not applicable to charters':'None known',gapColor:d.charter?'#B8740B':'#2D2C2A'},
+      {s:'Bond Review Board',c:'Debt outstanding by issue, maturity dates',f:'FY2025',j:'District name → ID crosswalk',g:d.charter?'Debt data not available for charter schools':'Refunding detail partial before FY2016',gapColor:d.charter?'#B8740B':'#2D2C2A'},
+      {s:'Bond elections',c:'Amount, purpose, votes, result',f:'1958 → May 2026',j:'District name → ID crosswalk',g:d.bonds.length?'None known':'No bond elections on record since 1998',gapColor:'#2D2C2A'},
+      {s:'TEA AskTED / campus directory',c:'Campuses, grades, contacts',f:'2024-25',j:'District ID',g:'None known',gapColor:'#2D2C2A'},
+      {s:'NCES',c:'Locale, staffing, school-level data',f:'2024',j:'NCES LEAID ↔ TEA ID',g:'None known',gapColor:'#2D2C2A'},
+      {s:'Federal F-33',c:'Energy-only utility spending (federal energy estimate)',f:'FY2020',j:'NCES LEAID',g:'Only one year; shown separately from PEIMS utilities',gapColor:'#B8740B'},
+      {s:'Not publicly available',c:'Building age, square footage, system condition, kWh/therms, electric vs gas split',f:'—',j:'—',g:'Requires district-provided data',gapColor:'#B8740B'}];
+    const district={dd:d,dMeta:'TEA '+d.teaId+' · '+d.county+' · ESC Region '+d.region+' ('+d.regionName+') · '+d.locale+(d.charter?' · Charter':''),dStats,cardGroups,cardsA:cardStyleA,cardsB:!cardStyleA,tabs,tabCharts,tabTiles,tabDims,
+      levelRows,levelNote:d.campuses+' campuses total, '+d.cpk.toFixed(2)+' per 1,000 students (peers '+m.cpk.toFixed(2)+'). Square footage and building age aren’t publicly available.',
+      bondSumHead:[{label:'Period',align:'left'},{label:'Passed',align:'right'},{label:'Failed',align:'right'},{label:'Pass rate',align:'right'},{label:'Amount passed',align:'right'}],
+      bondSumRows:bsum.map(b=>Object.assign({},b,{passed:String(b.passed),failed:String(b.failed),amountLabel:b.amount?$M(b.amount):'$0'})),
+      lastElectionLine:d.lastElection?'Last election '+d.lastElection.label+': '+$M(d.lastElection.amt*1e6)+', '+(d.lastElection.passed?'passed':'failed')+'. Last passed '+(d.lastPassed?d.lastPassed.label+', '+$M(d.lastPassed.amt*1e6):'none since 1998')+'. Cancelled elections are excluded.':'No bond elections on record since 1998.',
+      tabIs:{budget:s.tab==='budget',capSummary:s.tab==='cap'&&!d.charter,peers:s.tab==='peers',research:s.tab==='research',notes:s.tab==='notes',sources:s.tab==='sources',capMissing:s.tab==='cap'&&d.charter},
+      aspectOptions:[['slide','16:9 slide'],['letter','Letter width']].map(([k,l])=>({label:l,bg:s.aspect===k?'#000':'#fff',fg:s.aspect===k?'#fff':'#000',onClick:()=>set({aspect:k})})),exportTransparent:s.exportTransparent,toggleTransparent:e=>set({exportTransparent:e.target.checked}),
+      peerSets:[['ops','Operations peers'],['cap','Capital peers']].map(([k,l])=>({label:l,bg:ps===k?'#000':'#fff',fg:ps===k?'#fff':'#000',onClick:()=>set({peerSet:k})})),
+      peerCount:members.length,peerCriteria:T.PEER_CRITERIA[ps].toLowerCase(),
+      peerMembers:members.map(p=>({name:p.name,sub:p.county+' · Region '+p.region+' · '+T.num(p.enroll)+' students · '+p.locale,added:(ov.added||[]).includes(p.id),onOpen:()=>this.openDistrict(p.id,'peers'),
+        onRemove:()=>setOv({removed:(ov.removed||[]).concat([p.id]),added:(ov.added||[]).filter(a=>a!==p.id)})})),
+      peerAddOptions:T.D.filter(p=>p.id!==d.id&&!members.includes(p)).sort((a,b)=>a.name.localeCompare(b.name)).map(p=>opt(p.id,p.name+' · Region '+p.region)),
+      onPeerAdd:e=>{ const v=e.target.value; if(!v) return; setOv({removed:(ov.removed||[]).filter(r=>r!==v),added:(ov.added||[]).concat([v])}); },
+      peerEdited:!!((ov.removed||[]).length||(ov.added||[]).length),resetPeers:()=>setOv({removed:[],added:[]}),peerTable,
+      researchItems,researchProgress:found+' found · '+na+' not available · '+(RESEARCH.length-found-na)+' not checked. Saved on this device.',
+      docText:s.docText,docSrc:s.docSrc,onDocText:e=>set({docText:e.target.value}),onDocSrc:e=>set({docSrc:e.target.value}),
+      addDocFinding:()=>{ if(!s.docText.trim()) return; const f={id:'doc-'+Date.now(),text:s.docText.trim(),src:s.docSrc.trim(),date:today}; set({docFindings:Object.assign({},s.docFindings,{[d.id]:(s.docFindings[d.id]||[]).concat([f])}),docText:'',docSrc:''}); this.flash('Added a document-sourced finding card.'); },
+      noteDraft:s.noteDraft,onNoteDraft:e=>set({noteDraft:e.target.value}),notesList,noNotes:!notesList.length,
+      addNote:()=>{ if(!s.noteDraft.trim()) return; set({notes:Object.assign({},s.notes,{[d.id]:(s.notes[d.id]||[]).concat([{text:s.noteDraft.trim(),date:today}])}),noteDraft:''}); },
+      sourceHead:['Source','Contents','Freshness','Join used','Known gaps for this district'],sourceRows,
+      addDistrictToBrief:()=>{ const inc=cards.filter(c=>c.lens===lens||!cards.some(z=>z.lens===lens)).slice(0,3); this.setState(st=>{ const pins=st.pins.slice(); const disp=Object.assign({},st.disp); inc.forEach(c=>{ if(!pins.includes(c.id)) pins.push(c.id); if(!disp[c.id]) disp[c.id]='include'; }); return {pins,disp,briefDistrict:d.id,briefTemplate:lens,trayOpen:true}; }); },
+      compareThis:()=>{ const ids=s.compareIds.includes(d.id)?s.compareIds:[d.id].concat(s.compareIds).slice(0,4); this.go('compare',{compareIds:ids}); },
+      exportThis:()=>this.go('brief',{briefDistrict:d.id}),goRadar:()=>this.go('radar')};
+
+    // ---------- compare ----------
+    const cds=s.compareIds.map(id=>T.byId[id]).filter(Boolean);
+    const cx=cds.map(der);
+    const cell=(v,sub,color)=>({v,sub:sub||'',color:color||'#000',spark:null});
+    const opMix=(dd,k)=>{ const tot=['utilities','staff','contracted','other','supplies','capital'].reduce((a,q)=>a+dd.comp[q][9],0); return Math.round(dd.comp[k][9]/tot*100)+'%'; };
+    const grp=l=>({isGroup:true,isRow:false,label:l,cells:[]}); const row=(l,f)=>({isGroup:false,isRow:true,label:l,cells:cx.map(f)});
+    const cmpRows=[grp('Enrollment'),row('Enrollment',z=>cell(T.num(z.d.enroll),z.d.band+' · '+z.d.locale)),row('5-year growth',z=>cell(pct(z.d.g5,1))),
+      grp('Plant M&O and utilities'),row('Plant M&O per student',z=>cell($(z.d.f51PS),'peers '+$(z.m.f51))),row('Utilities per student',z=>cell($(z.d.utilPS),'peers '+$(z.m.util))),row('Utility growth since FY2021',z=>cell(pct(z.d.utilGrowth),'peers '+pct(z.m.utilGrowth))),
+      grp('Operating mix, FY2025'),row('In-house staff',z=>cell(opMix(z.d,'staff'))),row('Contracted maintenance & repair',z=>cell(opMix(z.d,'contracted'),pct(z.d.contractedGrowth)+' since FY2021')),row('Utilities',z=>cell(opMix(z.d,'utilities'))),
+      grp('Tax base and rates'),row('Property value per student',z=>cell('$'+Math.round(z.d.pvPS/1000)+'K',pct(z.d.pvGrowth5)+' (5 yr)')),row('M&O tax rate',z=>z.d.moRate!=null?cell('$'+z.d.moRate.toFixed(4)):cell('Not available','charter','#6E6C68')),row('I&S tax rate',z=>z.d.isRate!=null?cell('$'+z.d.isRate.toFixed(2),'cap $0.50'):cell('Not available','charter','#6E6C68')),
+      grp('Debt burden and retirement'),row('Debt per student',z=>z.d.debt!=null?cell($(z.d.debt/z.d.enroll)):cell('Not available','charter','#6E6C68')),row('Principal retiring by FY2031',z=>z.d.debt!=null?cell($M(z.d.retire5),Math.round(z.d.retire5/z.d.debt*100)+'% of outstanding'):cell('Not available','charter','#6E6C68')),
+      grp('Bond history'),row('Last passed bond',z=>z.d.lastPassed?cell($M(z.d.lastPassed.amt*1e6),z.d.lastPassed.label):cell(z.d.charter?'Not applicable':'None since 1998','','#6E6C68')),row('Record, passed / failed',z=>cell(z.d.bonds.filter(b=>b.passed).length+' / '+z.d.bonds.filter(b=>!b.passed).length)),
+      grp('Peer percentiles'),row('Utilities per student',z=>cell(z.lens.pc.pctile!=null?T.ord(z.lens.pc.pctile):'n/a','among '+z.m.n+' peers')),row('Plant M&O per student',z=>cell(z.lens.om.pctile!=null?T.ord(z.lens.om.pctile):'n/a','among '+z.m.n+' peers')),
+      grp('Trend direction'),row('Utilities per student, FY2016–FY2025',z=>Object.assign(cell(pct((z.d.utilSeries[9]/z.d.utilSeries[0]-1)*100)),{spark:T.spark(h,z.d.utilSeries)})),row('Enrollment, FY2016–FY2025',z=>Object.assign(cell(pct((z.d.enrollSeries[9]/z.d.enrollSeries[0]-1)*100)),{spark:T.spark(h,z.d.enrollSeries,{color:'#6E6C68'})}))];
+    const compare={cmpCols:'220px repeat('+Math.max(1,cds.length)+', minmax(0,1fr))',cmpHeads:cds.map((c,i)=>({name:c.name,sub:c.county+' · Region '+c.region,bg:i===0?'#F7F7F6':'#fff',onOpen:()=>this.openDistrict(c.id),onRemove:()=>set({compareIds:s.compareIds.filter(id=>id!==c.id)})})),cmpRows,
+      canAddCompare:cds.length<4,compareAddOptions:T.D.filter(p=>!s.compareIds.includes(p.id)).sort((a,b)=>a.name.localeCompare(b.name)).map(p=>opt(p.id,p.name)),
+      onCompareAdd:e=>{ const v=e.target.value; if(v) set({compareIds:s.compareIds.concat([v]).slice(0,4)}); },
+      suggestSimilar:()=>{ const first=cds[0]||d; const sug=T.peersFor(first,'ops',s.peerOv).filter(id=>!s.compareIds.includes(id)); set({compareIds:s.compareIds.concat(sug).slice(0,4)}); this.flash('Added similar districts using the operations peer definition.'); },
+      compareCsv:()=>{ const head=['Metric'].concat(cds.map(c=>c.name)); const rr=cmpRows.filter(r=>r.isRow).map(r=>[r.label].concat(r.cells.map(c=>c.v))); this.download('compare-districts.csv',this.csv(head,rr)); },
+      compareGraphic:()=>this.flash('Graphic export uses the chart export frame. See Exports & Briefs.')};
+
+    // ---------- brief ----------
+    const bd=T.byId[s.briefDistrict]||d;
+    const bCards=this.allCards(bd.id,T); const cById={}; bCards.forEach(c=>cById[c.id]=c);
+    const bPins=s.pins.filter(id=>id.startsWith(bd.id+':')&&cById[id]);
+    const move=(id,dlt)=>{ const p=s.pins.slice(); const i=p.indexOf(id); const mine=bPins; const j=mine.indexOf(id)+dlt; if(j<0||j>=mine.length) return; const k=p.indexOf(mine[j]); p[i]=mine[j]; p[k]=id; set({pins:p}); };
+    const trayItems=bPins.map(id=>{ const c=cById[id]; const dk=s.disp[id]||''; const inc=dk==='include';
+      return {title:c.title,text:s.edits[id]!=null?s.edits[id]:c.text,dispKey:dk,onDispChange:e=>this.setDisp(id,e.target.value),onEdit:e=>set({edits:Object.assign({},s.edits,{[id]:e.target.value})}),
+        onUp:()=>move(id,-1),onDown:()=>move(id,1),onRemove:()=>set({pins:s.pins.filter(p=>p!==id)}),border:inc?'#B8DBFF':'#E2E1DE',bg:inc?'#fff':'#F7F7F6',stateLabel:inc?'In export':'Not in export',stateColor:inc?'#004E99':'#6E6C68'}; });
+    const incIds=bPins.filter(id=>s.disp[id]==='include');
+    const extra=s.extraQs[bd.id]||[];
+    const trayQuestions=incIds.filter(id=>cById[id].ask).map(id=>({text:s.qEdits[id]!=null?s.qEdits[id]:cById[id].ask,onEdit:e=>set({qEdits:Object.assign({},s.qEdits,{[id]:e.target.value})})}))
+      .concat(extra.map((q,i)=>({text:q,onEdit:e=>{ const a=extra.slice(); a[i]=e.target.value; set({extraQs:Object.assign({},s.extraQs,{[bd.id]:a})}); }})));
+    const bc=s.briefCharts[bd.id+':'+s.briefTemplate]||TPL_CHARTS[s.briefTemplate];
+    const bch=T.charts(T.derive(bd,s.peerOv),h); const chartOptions=Object.keys(CHART_LABELS).filter(k=>bch[k]).map(k=>opt(k,CHART_LABELS[k]));
+    const setBC=(i,v)=>{ const a=bc.slice(); a[i]=v; set({briefCharts:Object.assign({},s.briefCharts,{[bd.id+':'+s.briefTemplate]:a})}); };
+    const briefFindings=incIds.map(id=>Object.assign({},cById[id],{text:s.edits[id]!=null?s.edits[id]:cById[id].text,keyNum:cById[id].keyNum||'Doc',keyLabel:cById[id].keyLabel||cById[id].dollarsLabel}));
+    const withPins=[...new Set(s.pins.map(p=>p.split(':')[0]).concat([d.id,bd.id]))].filter(id=>T.byId[id]);
+    const brief={briefDistrict:bd.id,briefDistrictName:bd.name,briefTemplate:s.briefTemplate,briefVariant:s.briefVariant,briefFindings,briefQuestions:trayQuestions.map(q=>q.text).filter(t=>t.trim()),briefChartKeys:bc,peerOv:s.peerOv,
+      templateOptions:TEMPLATES,onBriefTemplate:e=>set({briefTemplate:e.target.value}),variantOptions:['A','B'].map(v=>({label:'Layout '+v,bg:s.briefVariant===v?'#000':'#fff',fg:s.briefVariant===v?'#fff':'#000',onClick:()=>set({briefVariant:v})})),
+      briefIncludedLabel:briefFindings.length?Math.min(3,briefFindings.length)+' of '+briefFindings.length+' included findings shown':'No included findings; showing suggested findings',
+      briefDistrictOptions:withPins.map(id=>opt(id,T.byId[id].name)),onBriefDistrict:e=>set({briefDistrict:e.target.value}),
+      trayItems,trayEmpty:!trayItems.length,trayQuestions,dispOptionsPlain:DISP,addQuestion:()=>set({extraQs:Object.assign({},s.extraQs,{[bd.id]:extra.concat([''])})}),
+      chartOptions,briefChart1:bc[0],briefChart2:bc[1]||bc[0],onBriefChart1:e=>setBC(0,e.target.value),onBriefChart2:e=>setBC(1,e.target.value),
+      briefNotes:s.briefNotes,onBriefNotes:e=>set({briefNotes:e.target.value}),
+      previewBrief:()=>this.go('brief',{trayOpen:false}),openTray:()=>set({trayOpen:true}),printBrief:()=>window.print(),backFromBrief:()=>this.openDistrict(bd.id)};
+
+    return Object.assign(base,radar,district,compare,brief,{
+      navItems:nav,lookup:s.lookup,onLookup:e=>set({lookup:e.target.value}),lookupOpen:!!lk,lookupResults,lookupEmpty:!!lk&&!lookupResults.length,
+      saveMenu:s.saveMenu,toggleSaveMenu:()=>set({saveMenu:!s.saveMenu}),savedAtLabel:s.savedAt?'Last saved '+new Date(s.savedAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}):'Nothing saved yet.',
+      exportResearch:()=>{ const o={format:'upchurch-district-research',version:1,exported:new Date().toISOString()}; PERSIST.forEach(k=>o[k]=s[k]); this.download('upchurch-research-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(o,null,2),'application/json'); },
+      importResearch:e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result); const n={}; PERSIST.forEach(k=>{ if(o[k]!==undefined) n[k]=o[k]; }); set(Object.assign(n,{saveMenu:false})); this.flash('Research file imported.'); }catch(err){ this.flash('That file isn’t a research file.'); } }; r.readAsText(f); },
+      toggleTray:()=>set({trayOpen:!s.trayOpen}),trayOpen:s.trayOpen,trayBtnBg:s.trayOpen?'#000':'#fff',trayBtnFg:s.trayOpen?'#fff':'#000',pinCount:String(s.pins.length),mainPad:s.trayOpen?'420px':'0',
+      isRadar:s.screen==='radar',isDistrict:s.screen==='district',isCompare:s.screen==='compare',isBrief:s.screen==='brief',isMethod:s.screen==='method',
+      goMethod:()=>this.go('method'),critOps:T.PEER_CRITERIA.ops.toLowerCase(),critCap:T.PEER_CRITERIA.cap.toLowerCase(),toast:s.toast});
+  }
+}
+</script>
+</body>
+</html>

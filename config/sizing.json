@@ -1,0 +1,101 @@
+{
+  "_note": "Upchurch commercial sizing assumptions (current as of Sept 2026, from texas_esco_priority.xlsx). Internal: ships only inside the encrypted bundle.",
+  "energy_share": {
+    "default": 1.0,
+    "note": "Sizing applies savings rates to PEIMS utilities (object 6259: electricity, gas, water/wastewater, telephone). ESCO scopes routinely include water measures. NCES F-33 'energy' can't be used to split this out: it runs a median 17% ABOVE PEIMS utilities because it also counts vehicle fuel. Lower this share if you want to exclude water/telephone."
+  },
+  "inefficiency": {
+    "median_offset": 0.95,
+    "span": 0.45,
+    "high_capital_factor": 0.9,
+    "high_capital_percentile": 0.75
+  },
+  "esco": {
+    "savings_bands_by_f51_ratio": [
+      [
+        0.9,
+        0.1
+      ],
+      [
+        1.05,
+        0.15
+      ],
+      [
+        1.2,
+        0.2
+      ],
+      [
+        1.4,
+        0.25
+      ],
+      [
+        null,
+        0.3
+      ]
+    ],
+    "high_capital_reduction": 0.05,
+    "savings_floor": 0.1,
+    "project_multiple_by_enrollment": [
+      [
+        1000,
+        10
+      ],
+      [
+        2500,
+        12
+      ],
+      [
+        7500,
+        14
+      ],
+      [
+        null,
+        15
+      ]
+    ],
+    "budget_stress": {
+      "target_surplus_per_student": 250,
+      "scale": 1000
+    },
+    "savings_per_student_index": {
+      "floor": 40,
+      "span": 160
+    },
+    "priority_weights": {
+      "budget_stress": 0.45,
+      "savings_per_student": 0.35,
+      "inefficiency": 0.2
+    }
+  },
+  "uptime_ops": {
+    "base": "addressable",
+    "_base_options": "addressable = plant staff + contracted repair + other contracted services + supplies; f51_total = all of Function 51 (workbook original)",
+    "savings_rate": {
+      "base": 0.08,
+      "per_inefficiency": 0.14
+    },
+    "fee_rate": {
+      "base": 0.06,
+      "per_inefficiency": 0.06
+    },
+    "priority_weights": {
+      "inefficiency": 0.5,
+      "f51_per_student": 0.3,
+      "benefit_per_student": 0.2
+    }
+  },
+  "emaas": {
+    "enrollment_min": 1000,
+    "enrollment_max": 3000,
+    "savings_offset_from_esco": 0.1,
+    "savings_min": 0.05,
+    "savings_max": 0.1,
+    "annual_fee": 25000,
+    "priority_weights": {
+      "net_benefit": 0.4,
+      "f51_per_student": 0.25,
+      "capital_per_student": 0.2,
+      "enrollment": 0.15
+    }
+  }
+}

@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# plaintext bundle never leaves your machine; only public/data/bundle.enc.json is committed
+data/bundle.json

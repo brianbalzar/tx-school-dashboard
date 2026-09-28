@@ -1,0 +1,16 @@
+{
+  "name": "tx-school-dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "observable preview",
+    "build": "observable build",
+    "clean": "rimraf src/.observablehq/cache"
+  },
+  "dependencies": {
+    "@observablehq/framework": "^1.13.4",
+    "topojson-client": "^3.1.0",
+    "us-atlas": "^3.0.1"
+  },
+  "engines": { "node": ">=20" }
+}
